@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %} Регистрация {% endblock %}
+
+{% block content %}
+<div class="container d-flex justify-content-center align-items-center vh-100">
+    <div class="card shadow p-4 text-center" style="max-width: 400px; width: 100%;">
+        <form method="POST">
+            {{ form.hidden_tag() }}
+            <h1 class="h3 mb-3 fw-normal">Регистрация</h1>
+
+            {# Поле Username #}
+            <div class="form-floating mb-2">
+                {{ form.username(class="form-control" + (" is-invalid" if form.username.errors else ""), id="floatingUsername", placeholder="Логин") }}
+                <label for="floatingUsername">{{ form.username.label }}</label>
+                {% for error in form.username.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+            </div>
+
+            {# Поле Password #}
+            <div class="form-floating mb-2">
+                {{ form.password(class="form-control" + (" is-invalid" if form.password.errors else ""), id="floatingPassword", placeholder="Пароль") }}
+                <label for="floatingPassword">{{ form.password.label }}</label>
+                {% for error in form.password.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+            </div>
+
+            {# Поле Confirm Password #}
+            <div class="form-floating mb-3">
+                {{ form.confirm_password(class="form-control" + (" is-invalid" if form.confirm_password.errors else ""), id="floatingConfirm", placeholder="Подтвердите пароль") }}
+                <label for="floatingConfirm">{{ form.confirm_password.label }}</label>
+                {% for error in form.confirm_password.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+            </div>
+
+            {{ form.submit(class="btn btn-primary w-100 py-2") }}
+
+            <div class="mt-3">
+                {# Проверь, чтобы имя эндпоинта 'auth.login' было верным #}
+                <a href="{{ url_for('auth.login') }}" class="text-decoration-none">Уже есть аккаунт? Войти</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,65 @@
+{% extends "admin/base_admin.html" %}
+
+{% block content %}
+    <div class="col-md-8 mx-auto">
+        {% if form.errors %}
+            <div class="alert alert-danger">
+                <strong>Ошибка!</strong> Проверьте поля: {{ form.errors.keys()|list }}
+            </div>
+        {% endif %}
+
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white py-3 fw-bold">
+                {{ 'Редактирование данных' if edit else 'Карточка нового сотрудника' }}
+            </div>
+            <div class="card-body p-4">
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            {{ form.last_name.label(class="form-label") }}{{ form.last_name(class="form-control") }}</div>
+                        <div class="col-md-4">
+                            {{ form.first_name.label(class="form-label") }}{{ form.first_name(class="form-control") }}</div>
+                        <div class="col-md-4">
+                            {{ form.middle_name.label(class="form-label") }}{{ form.middle_name(class="form-control") }}</div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            {{ form.email.label(class="form-label") }}{{ form.email(class="form-control") }}</div>
+                        <div class="col-md-6">
+                            {{ form.phone.label(class="form-label") }}{{ form.phone(class="form-control") }}</div>
+                    </div>
+                    <div class="mb-4">
+                        {{ form.position_id.label(class="form-label") }}
+                        <div class="input-group">
+                            {{ form.position_id(class="form-select " + ("is-invalid" if form.position_id.errors else "")) }}
+                            {# Кнопка быстрого перехода к созданию должности #}
+                            <a href="{{ url_for('admin.add_position', next=request.full_path) }}"
+                               class="btn btn-outline-secondary"
+                               title="Создать новую должность">
+                                <i class="bi bi-plus-lg"></i> +
+                            </a>
+                        </div>
+                        {% for error in form.position_id.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>{% endfor %}
+                        <div class="form-text small">Если нужной должности нет, нажмите на "+" справа</div>
+                    </div>
+                    <div class="mb-3">
+                        {{ form.hire_date.label(class="form-label") }}
+                        {{ form.hire_date(class="form-control", type="date") }}
+                    </div>
+
+                    <div class="form-check mb-4">
+                        {{ form.is_active(class="form-check-input") }}{{ form.is_active.label(class="form-check-label") }}</div>
+
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ request.args.get('next') or url_for('admin.departments') }}"
+                           class="btn btn-light border">Отмена</a>
+                        <button type="submit" class="btn btn-primary px-5">Сохранить</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}

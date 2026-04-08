@@ -1,0 +1,47 @@
+{% extends "admin/base_admin.html" %}
+
+{% block content %}
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{{ url_for('admin.departments') }}">Структура</a></li>
+    <li class="breadcrumb-item active">{{ dept.name }}</li>
+  </ol>
+</nav>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Отдел: {{ dept.name }}</h2>
+    <div class="btn-group">
+        <a href="{{ url_for('admin.edit_department', dept_id=dept.id) }}" class="btn btn-outline-secondary">Настройки отдела</a>
+        <a href="{{ url_for('admin.add_employee', dept_id=dept.id) }}" class="btn btn-success">Добавить сотрудника</a>
+    </div>
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="card-body">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>ФИО</th>
+                    <th>Должность</th>
+                    <th>Контакты</th>
+                    <th class="text-end">Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for emp in employees %}
+                <tr>
+                    <td><strong>{{ emp.full_name }}</strong></td>
+                    <td><span class="badge bg-light text-dark border fw-normal">{{ emp.position.title }}</span></td>
+                    <td><small>{{ emp.email }}</small></td>
+                    <td class="text-end">
+                        <a href="{{ url_for('admin.edit_employee', emp_id=emp.id, next=request.path) }}" class="btn btn-sm btn-primary">Изменить</a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="4" class="text-center py-4 text-muted">В этом отделе пока пусто</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

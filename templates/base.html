@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %} {% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body class="bg-light">
+<div class="container">
+    <header class="d-flex flex-wrap align-items-center justify-content-center justify-content-md-between py-3 mb-4 border-bottom">
+        <ul class="nav nav-pills">
+            <li class="nav-item"><a href="{{ url_for('main.home') }}" class="nav-link active" aria-current="page">Главная</a>
+            </li>
+            <li class="nav-item"><a href="" class="nav-link">Продукция</a></li>
+            <li class="nav-item"><a href="" class="nav-link">О нас</a></li>
+            <li class="nav-item"><a href="" class="nav-link">Контакты</a></li>
+            {% if current_user.is_authenticated and current_user.is_admin %}
+                <li class="nav-item">
+                    <a href="{{ url_for('admin.index') }}" class="nav-link">Админ</a>
+                </li>
+            {% endif %}
+        </ul>
+        <div class="col-md-3 text-end">
+            {% if current_user.is_authenticated %}
+                <span class="navbar-text me-3">
+                    Привет, <strong>{{ current_user.username }}</strong>!
+                </span>
+                <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-danger me-2">Выйти</a>
+            {% else %}
+                <form>
+                    <a href="{{ url_for('auth.login') }}" class="btn btn-outline-primary me-2" role="button">Логин</a>
+                    <a href="{{ url_for('auth.register') }}" class="btn btn-primary" role="button">Регистрация</a>
+                </form>
+            {% endif %}
+        </div>
+    </header>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    {% block content %} {% endblock %}
+</div>
+<script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
+</body>
+</html>

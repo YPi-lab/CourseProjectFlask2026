@@ -1,0 +1,28 @@
+{% extends "admin/base_admin.html" %}
+
+{% block content %}
+    <div class="col-md-6 mx-auto">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white py-3 fw-bold">
+                {{ 'Редактирование должности' if edit else 'Новая должность' }}
+            </div>
+            <div class="card-body p-4">
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+                    <div class="mb-3">
+                        {{ form.title.label(class="form-label") }}
+                        {{ form.title(class="form-control") }}
+                    </div>
+                    <div class="mb-4">
+                        {{ form.department_id.label(class="form-label") }}
+                        {{ form.department_id(class="form-select") }}
+                    </div>
+                    <div class="d-flex justify-content-between border-top pt-3">
+                        <a href="{{ url_for('admin.positions') }}" class="btn btn-light border">Отмена</a>
+                        <button type="submit" class="btn btn-primary px-4">Сохранить</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}

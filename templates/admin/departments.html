@@ -1,0 +1,92 @@
+{% extends "admin/base_admin.html" %}
+
+{% block content %}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Структура организации</h2>
+        <a href="{{ url_for('admin.add_department') }}" class="btn btn-primary">Добавить отдел</a>
+    </div>
+
+    {% macro render_dept(dept, depth=0) %}
+        <div class="list-group-item border-0 ms-{{ depth * 3 }} pb-0">
+            <div class="d-flex justify-content-between align-items-center py-1 border-bottom">
+            <span>
+                {% set subs = dept.sub_departments.all() %}
+                {% set emps = dept.all_employees %}
+
+                {% if subs or emps %}
+                    <button class="btn btn-sm p-0 me-2 text-primary shadow-none btn-toggle"
+                            type="button" data-bs-toggle="collapse" data-bs-target="#sub-{{ dept.id }}">
+                        ▶
+                    </button>
+                {% else %}
+                    <span class="me-4"></span>
+                {% endif %}
+
+                <span class="text-secondary">📁</span>
+                <a href="{{ url_for('admin.department_detail', dept_id=dept.id) }}"
+                   class="text-decoration-none fw-bold text-dark">
+                    {{ dept.name }}
+                </a>
+                <span class="badge bg-light text-muted border ms-2 small">{{ emps|length }}</span>
+            </span>
+
+                <div class="btn-group">
+                    <form action="{{ url_for('admin.delete_department', dept_id=dept.id) }}" method="POST"
+                          style="display:inline;" onsubmit="return confirm('Удалить отдел?');">
+                        <button type="submit" class="btn btn-sm btn-outline-danger">Удалить</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="collapse ms-3 border-start" id="sub-{{ dept.id }}">
+                <div class="mt-1 ps-3">
+                    {% for sub in subs %}
+                        {{ render_dept(sub, depth + 1) }}
+                    {% endfor %}
+
+                    {% for pos in dept.positions %}
+                        {% for emp in pos.employees %}
+                            <div class="py-1 d-flex justify-content-between align-items-center border-bottom border-light small">
+                            <span>
+                                <span class="text-info me-2">👤</span>
+                                {{ emp.full_name }}
+                                <span class="text-muted ms-2">— {{ pos.title }}</span>
+                            </span>
+                                <a href="{{ url_for('admin.edit_employee', emp_id=emp.id, next=request.path) }}"
+                                   class="text-primary small text-decoration-none">правка</a>
+                            </div>
+                        {% endfor %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    {% endmacro %}
+
+    <div class="container-fluid bg-white p-3 shadow-sm rounded">
+        {% if departments %}
+            <div class="list-group">
+                {% for d in departments %}
+                    {{ render_dept(d, 0) }}
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="alert alert-info">В базе нет отделов.</div>
+        {% endif %}
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const collapses = document.querySelectorAll('.collapse');
+            collapses.forEach(el => {
+                el.addEventListener('show.bs.collapse', function () {
+                    const btn = this.previousElementSibling.querySelector('.btn-toggle');
+                    if (btn) btn.innerText = '▼';
+                });
+                el.addEventListener('hide.bs.collapse', function () {
+                    const btn = this.previousElementSibling.querySelector('.btn-toggle');
+                    if (btn) btn.innerText = '▶';
+                });
+            });
+        });
+    </script>
+{% endblock %}
