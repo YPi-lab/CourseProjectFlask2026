@@ -1,8 +1,8 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, request
-from flask_login import login_required
+from flask import Blueprint, render_template, redirect, url_for, flash, request, abort
+from flask_login import login_required, current_user
 
 from forms import DepartmentForm, EmployeeForm, PositionForm
-from models import Department, db, Employee, Position
+from models import Department, db, Employee, Position, User
 
 admin_bp = Blueprint('admin', __name__)
 
@@ -53,6 +53,7 @@ def department_detail(dept_id):
 
 
 @admin_bp.route('/employees')
+@login_required
 def employees():
     all_employees = Employee.query.all()
     return render_template('admin/employees.html', employees=all_employees)
@@ -83,6 +84,7 @@ def add_employee():
 
 
 @admin_bp.route('/positions')
+@login_required
 def positions():
     all_positions = Position.query.join(Department).all()
     return render_template('admin/position.html', positions=all_positions)
@@ -147,6 +149,7 @@ def edit_employee(emp_id):
 
 
 @admin_bp.route('/department/delete/<int:dept_id>', methods=['POST'])
+@login_required
 def delete_department(dept_id):
     dept = Department.query.get_or_404(dept_id)
     db.session.delete(dept)
@@ -199,3 +202,43 @@ def edit_position(pos_id):
         return redirect(url_for('admin.positions'))
 
     return render_template('admin/add_position.html', form=form, edit=True)
+
+
+@admin_bp.route('/users')
+@login_required
+def user_list():
+    if not current_user.is_admin:
+        abort(403)
+    users = User.query.all()
+    return render_template('admin/users.html', users=users)
+
+
+@admin_bp.route('/delete_user/<int:user_id>', methods=['POST'])
+@login_required
+def delete_user(user_id):
+    if not current_user.is_admin:
+        abort(403)
+    user = User.query.get_or_404(user_id)
+    db.session.delete(user)
+    db.session.commit()
+    flash(f'Пользователь {user.username} удален', 'warning')
+    return redirect(url_for('admin.user_list'))
+
+
+@admin_bp.route('/toggle_admin/<int:user_id>', methods=['POST'])
+@login_required
+def toggle_admin(user_id):
+    if not current_user.is_admin:
+        abort(403)
+    user = User.query.get_or_404(user_id)
+
+    if user.id == current_user.id:
+        flash('Вы не можете лишить прав администратора самого себя', 'danger')
+        return redirect(url_for('admin.user_list'))
+
+    user.is_admin = not user.is_admin
+    db.session.commit()
+
+    status = "назначен администратором" if user.is_admin else "лишен прав администратора"
+    flash(f'Пользователь {user.username} {status}', 'success')
+    return redirect(url_for('admin.user_list'))

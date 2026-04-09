@@ -18,7 +18,10 @@
             <li class="nav-item"><a href="{{ url_for('main.contact') }}" class="nav-link">Контакты</a></li>
             {% if current_user.is_authenticated and current_user.is_admin %}
                 <li class="nav-item">
-                    <a href="{{ url_for('admin.index') }}" class="nav-link">Кадровый учет</a>
+                    <a href="{{ url_for('admin.index') }}" class="nav-link active me-3">Кадровый учет</a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('admin.user_list') }}" class="nav-link active">Пользователи</a>
                 </li>
             {% endif %}
         </ul>

@@ -1,19 +1,23 @@
 {% extends "admin/base_admin.html" %}
 
 {% block content %}
-    <div class="card shadow-sm col-md-6">
-        <div class="card-body">
-            <h4 class="mb-4">Заполнение данных</h4>
-            <form method="post">
-                {{ form.hidden_tag() }}
-                {% for field in form if field.name != 'csrf_token' and field.name !='submit' %}
-                    <div class="mb-3">
-                        {{ field.label(class="form-label") }}
-                        {{ field(class="form-control" if field.type != 'SelectField' else "form-select") }}
-                    </div>
-                {% endfor %}
-                <button type="submit" class="btn btn-primary w-100">{{ form.submit.label.text }}</button>
-            </form>
+    <div class="col-md-6 mx-auto">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white py-3 fw-bold">
+                {{ 'Редактирование отдела' if edit else 'Новый отдел' }}
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {{ form.hidden_tag() }}
+                    {% for field in form if field.name != 'csrf_token' and field.name !='submit' %}
+                        <div class="mb-3">
+                            {{ field.label(class="form-label") }}
+                            {{ field(class="form-control" if field.type != 'SelectField' else "form-select") }}
+                        </div>
+                    {% endfor %}
+                    <button type="submit" class="btn btn-primary w-100">{{ form.submit.label.text }}</button>
+                </form>
+            </div>
         </div>
     </div>
 {% endblock %}

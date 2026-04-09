@@ -15,7 +15,17 @@
                     </div>
                     <div class="mb-4">
                         {{ form.department_id.label(class="form-label") }}
-                        {{ form.department_id(class="form-select") }}
+                        <div class="input-group">
+                            {{ form.department_id(class="form-select " + ("is-invalid" if form.department_id.errors else "")) }}
+                            <a href="{{ url_for('admin.add_department', next=request.full_path) }}"
+                               class="btn btn-outline-secondary"
+                               title="Создать новый отдел">
+                                <i class="bi bi-plus-lg"></i> +
+                            </a>
+                        </div>
+                        {% for error in form.department_id.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>{% endfor %}
+                        <div class="form-text small">Если нужного отдела нет, нажмите на "+" справа</div>
                     </div>
                     <div class="d-flex justify-content-between border-top pt-3">
                         <a href="{{ url_for('admin.positions') }}" class="btn btn-light border">Отмена</a>
