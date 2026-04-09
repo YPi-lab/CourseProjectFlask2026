@@ -22,7 +22,7 @@ class Department(db.Model):
     sub_departments = db.relationship(
         'Department',
         backref=db.backref('parent', remote_side=[id]),
-        cascade="all, delete-orphan",  # Теперь удаление предка удалит всех потомков
+        cascade="all, delete-orphan",
         lazy='dynamic'
     )
     positions = db.relationship('Position', backref='department', cascade="all,delete-orphan", lazy='select')

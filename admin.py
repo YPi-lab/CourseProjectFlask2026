@@ -103,7 +103,6 @@ def add_position():
         db.session.commit()
         flash(f'Должность "{new_position.title}" создана!', 'success')
 
-        # Если в ссылке был параметр next, возвращаемся по нему
         next_page = request.args.get('next')
         return redirect(next_page or url_for('admin.positions'))
 
@@ -147,28 +146,25 @@ def edit_employee(emp_id):
     return render_template('admin/add_employee.html', form=form, edit=True)
 
 
-# --- УДАЛЕНИЕ ОТДЕЛА ---
 @admin_bp.route('/department/delete/<int:dept_id>', methods=['POST'])
 def delete_department(dept_id):
     dept = Department.query.get_or_404(dept_id)
-    db.session.delete(dept)  # SQLAlchemy сам удалит вложенные записи благодаря cascade
+    db.session.delete(dept)
     db.session.commit()
     flash(f'Отдел {dept.name} и вся его структура удалены', 'success')
     return redirect(url_for('admin.departments'))
 
 
-# --- УДАЛЕНИЕ ДОЛЖНОСТИ ---
 @admin_bp.route('/position/delete/<int:pos_id>', methods=['POST'])
 @login_required
 def delete_position(pos_id):
     pos = Position.query.get_or_404(pos_id)
 
-    # Находим всех, кто занимал эту должность
     affected_employees = Employee.query.filter_by(position_id=pos.id).all()
 
     for emp in affected_employees:
-        emp.position_id = None  # Убираем привязку к должности и отделу
-        emp.is_active = False  # Ставим статус "Неактивен"
+        emp.position_id = None
+        emp.is_active = False
 
     db.session.delete(pos)
     db.session.commit()
@@ -176,7 +172,6 @@ def delete_position(pos_id):
     return redirect(url_for('admin.positions'))
 
 
-# --- УДАЛЕНИЕ СОТРУДНИКА ---
 @admin_bp.route('/employee/delete/<int:emp_id>', methods=['POST'])
 @login_required
 def delete_employee(emp_id):
@@ -192,9 +187,8 @@ def delete_employee(emp_id):
 @login_required
 def edit_position(pos_id):
     pos = Position.query.get_or_404(pos_id)
-    form = PositionForm(obj=pos)  # Загружаем данные объекта в форму
+    form = PositionForm(obj=pos)
 
-    # Заполняем варианты выбора отделов
     form.department_id.choices = [(d.id, d.name) for d in Department.query.all()]
 
     if form.validate_on_submit():

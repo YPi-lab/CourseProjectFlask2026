@@ -34,7 +34,6 @@
                         {{ form.position_id.label(class="form-label") }}
                         <div class="input-group">
                             {{ form.position_id(class="form-select " + ("is-invalid" if form.position_id.errors else "")) }}
-                            {# Кнопка быстрого перехода к созданию должности #}
                             <a href="{{ url_for('admin.add_position', next=request.full_path) }}"
                                class="btn btn-outline-secondary"
                                title="Создать новую должность">

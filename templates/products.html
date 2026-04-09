@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %} Продукция {% endblock %}
+{% block content %}
+    <h2 class="text-center mb-5 fw-bold">Наша продукция</h2>
+    <div class="row g-4">
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body text-center">
+                    <h5 class="card-title fw-bold">Системы связи</h5>
+                    <p class="card-text text-muted small">Профессиональные радиостанции и ретрансляторы УКВ/ДМВ.</p>
+                    <a href="#" class="btn btn-sm btn-primary">Подробнее</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body text-center">
+                    <h5 class="card-title fw-bold">КИП</h5>
+                    <p class="card-text text-muted small">Осциллографы и анализаторы спектра нового поколения.</p>
+                    <a href="#" class="btn btn-sm btn-primary">Подробнее</a>
+                </div>
+            </div>
+        </div>
+        <!-- Добавьте остальные карточки аналогично -->
+    </div>
+{% endblock %}

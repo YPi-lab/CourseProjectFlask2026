@@ -12,12 +12,13 @@
         <ul class="nav nav-pills">
             <li class="nav-item"><a href="{{ url_for('main.home') }}" class="nav-link active" aria-current="page">Главная</a>
             </li>
-            <li class="nav-item"><a href="" class="nav-link">Продукция</a></li>
-            <li class="nav-item"><a href="" class="nav-link">О нас</a></li>
-            <li class="nav-item"><a href="" class="nav-link">Контакты</a></li>
+            <li class="nav-item"><a href="{{ url_for('main.about') }}" class="nav-link">О компании</a></li>
+            <li class="nav-item"><a href="{{ url_for('main.products') }}" class="nav-link">Продукция</a></li>
+            <li class="nav-item"><a href="{{ url_for('main.services') }}" class="nav-link">Услуги</a></li>
+            <li class="nav-item"><a href="{{ url_for('main.contact') }}" class="nav-link">Контакты</a></li>
             {% if current_user.is_authenticated and current_user.is_admin %}
                 <li class="nav-item">
-                    <a href="{{ url_for('admin.index') }}" class="nav-link">Админ</a>
+                    <a href="{{ url_for('admin.index') }}" class="nav-link">Кадровый учет</a>
                 </li>
             {% endif %}
         </ul>
