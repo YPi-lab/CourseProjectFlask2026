@@ -17,9 +17,11 @@ def about():
 def contact():
     return render_template('contacts.html')
 
+
 @main.route('/products')
 def products():
     return render_template('products.html')
+
 
 @main.route('/services')
 def services():

@@ -43,9 +43,7 @@ class Position(db.Model):
     __tablename__ = 'position'
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(150), nullable=False)
-
     department_id = db.Column(db.Integer, db.ForeignKey('department.id'), nullable=False)
-
     employees = db.relationship('Employee', backref='position', lazy='dynamic')
 
     def __repr__(self):
@@ -58,13 +56,10 @@ class Employee(db.Model):
     last_name = db.Column(db.String(150), nullable=False)
     first_name = db.Column(db.String(150), nullable=False)
     middle_name = db.Column(db.String(150))
-
     email = db.Column(db.String(255), unique=True, nullable=False)
     phone = db.Column(db.String(150), unique=True, nullable=False)
-
     hire_date = db.Column(db.DateTime, default=datetime.utcnow)
     is_active = db.Column(db.Boolean, default=True)
-
     position_id = db.Column(db.Integer, db.ForeignKey('position.id'), nullable=True)
 
     @property

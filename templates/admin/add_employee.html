@@ -7,7 +7,6 @@
                 <strong>Ошибка!</strong> Проверьте поля: {{ form.errors.keys()|list }}
             </div>
         {% endif %}
-
         <div class="card shadow-sm border-0">
             <div class="card-header bg-white py-3 fw-bold">
                 {{ 'Редактирование данных' if edit else 'Карточка нового сотрудника' }}
@@ -23,7 +22,6 @@
                         <div class="col-md-4">
                             {{ form.middle_name.label(class="form-label") }}{{ form.middle_name(class="form-control") }}</div>
                     </div>
-
                     <div class="row mb-3">
                         <div class="col-md-6">
                             {{ form.email.label(class="form-label") }}{{ form.email(class="form-control") }}</div>
@@ -48,10 +46,8 @@
                         {{ form.hire_date.label(class="form-label") }}
                         {{ form.hire_date(class="form-control", type="date") }}
                     </div>
-
                     <div class="form-check mb-4">
                         {{ form.is_active(class="form-check-input") }}{{ form.is_active.label(class="form-check-label") }}</div>
-
                     <div class="d-flex justify-content-between">
                         <a href="{{ request.args.get('next') or url_for('admin.departments') }}"
                            class="btn btn-light border">Отмена</a>

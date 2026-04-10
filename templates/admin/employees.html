@@ -34,7 +34,6 @@
                         <td>
                             {{ emp.hire_date.strftime('%d.%m.%Y') if emp.hire_date else '—' }}
                         </td>
-
                         <td>
                             {% if emp.is_active %}
                                 <span class="badge bg-success-subtle text-success border-success">Активен</span>

@@ -29,19 +29,54 @@ def departments():
 @login_required
 def add_department():
     form = DepartmentForm()
-    existing_department = Department.query.all()
+    existing_departments = Department.query.all()
     choices = [(0, '--Корень--')]
-    for d in existing_department:
+    for d in existing_departments:
         choices.append((d.id, d.name))
     form.parent_id.choices = choices
     if form.validate_on_submit():
-        new_department = Department(name=form.name.data,
-                                    parent_id=form.parent_id.data if form.parent_id.data != 0 else None)
-        db.session.add(new_department)
-        db.session.commit()
-        flash('Структура обновлена!', 'success')
-        return redirect(url_for('admin.departments'))
+        duplicate = Department.query.filter_by(name=form.name.data).first()
+        if duplicate:
+            flash(f'Ошибка: отдел "{form.name.data}" уже существует!', 'danger')
+            return render_template('admin/add_departments.html', form=form)
+        parent_id = form.parent_id.data if form.parent_id.data != 0 else None
+        new_department = Department(name=form.name.data, parent_id=parent_id)
+        try:
+            db.session.add(new_department)
+            db.session.commit()
+            flash('Структура обновлена!', 'success')
+            return redirect(url_for('admin.departments'))
+        except Exception as e:
+            db.session.rollback()
+            flash('Произошла ошибка при сохранении в базу данных.', 'danger')
     return render_template('admin/add_departments.html', form=form)
+
+
+@admin_bp.route('/department/edit/<int:dept_id>', methods=['GET', 'POST'])
+@login_required
+def edit_department(dept_id):
+    dept = Department.query.get_or_404(dept_id)
+    form = DepartmentForm(obj=dept)
+    form.parent_id.choices = [(0, '-- Корень --')] + [(d.id, d.name) for d in
+                                                      Department.query.filter(Department.id != dept_id).all()]
+    if form.validate_on_submit():
+        duplicate = Department.query.filter(
+            Department.name == form.name.data,
+            Department.id != dept_id
+        ).first()
+        if duplicate:
+            flash(f'Ошибка: название "{form.name.data}" уже занято другим отделом!', 'danger')
+            return render_template('admin/add_departments.html', form=form, edit=True)
+        dept.name = form.name.data
+        dept.parent_id = form.parent_id.data if form.parent_id.data != 0 else None
+        try:
+            db.session.commit()
+            flash('Отдел обновлен', 'success')
+            return redirect(url_for('admin.departments'))
+        except Exception:
+            db.session.rollback()
+            flash('Ошибка при сохранении изменений', 'danger')
+    return render_template('admin/add_departments.html', form=form, edit=True)
 
 
 @admin_bp.route('/departments/<int:dept_id>')
@@ -50,6 +85,16 @@ def department_detail(dept_id):
     dept = Department.query.get_or_404(dept_id)
     employees = dept.all_employees
     return render_template('admin/department_detail.html', dept=dept, employees=employees)
+
+
+@admin_bp.route('/department/delete/<int:dept_id>', methods=['POST'])
+@login_required
+def delete_department(dept_id):
+    dept = Department.query.get_or_404(dept_id)
+    db.session.delete(dept)
+    db.session.commit()
+    flash(f'Отдел {dept.name} и вся его структура удалены', 'success')
+    return redirect(url_for('admin.departments'))
 
 
 @admin_bp.route('/employees')
@@ -64,8 +109,13 @@ def employees():
 def add_employee():
     form = EmployeeForm()
     form.position_id.choices = [(p.id, f"{p.title} ({p.department.name})") for p in Position.query.all()]
-
     if form.validate_on_submit():
+        if Employee.query.filter_by(email=form.email.data).first():
+            flash(f'Ошибка: Почта {form.email.data} уже используется!', 'danger')
+            return render_template('admin/add_employee.html', form=form)
+        if Employee.query.filter_by(phone=form.phone.data).first():
+            flash(f'Ошибка: Телефон {form.phone.data} уже зарегистрирован!', 'danger')
+            return render_template('admin/add_employee.html', form=form)
         new_emp = Employee(
             last_name=form.last_name.data,
             first_name=form.first_name.data,
@@ -76,11 +126,56 @@ def add_employee():
             position_id=form.position_id.data,
             is_active=form.is_active.data
         )
-        db.session.add(new_emp)
-        db.session.commit()
-        flash('Сотрудник добавлен', 'success')
-        return redirect(url_for('admin.departments'))
+        try:
+            db.session.add(new_emp)
+            db.session.commit()
+            flash('Сотрудник добавлен', 'success')
+            return redirect(url_for('admin.employees'))
+        except Exception:
+            db.session.rollback()
+            flash('Критическая ошибка базы данных', 'danger')
     return render_template('admin/add_employee.html', form=form)
+
+
+@admin_bp.route('/employee/edit/<int:emp_id>', methods=['GET', 'POST'])
+@login_required
+def edit_employee(emp_id):
+    emp = Employee.query.get_or_404(emp_id)
+    form = EmployeeForm(obj=emp)
+    form.position_id.choices = [(p.id, f"{p.title} ({p.department.name})") for p in Position.query.all()]
+    if form.validate_on_submit():
+        if Employee.query.filter(Employee.email == form.email.data, Employee.id != emp_id).first():
+            flash(f'Ошибка: Email {form.email.data} уже занят!', 'danger')
+            return render_template('admin/add_employee.html', form=form, edit=True)
+        if Employee.query.filter(Employee.phone == form.phone.data, Employee.id != emp_id).first():
+            flash(f'Ошибка: Телефон {form.phone.data} уже занят!', 'danger')
+            return render_template('admin/add_employee.html', form=form, edit=True)
+        emp.last_name = form.last_name.data
+        emp.first_name = form.first_name.data
+        emp.middle_name = form.middle_name.data
+        emp.email = form.email.data
+        emp.phone = form.phone.data
+        emp.position_id = form.position_id.data
+        emp.is_active = form.is_active.data
+        try:
+            db.session.commit()
+            flash('Данные сотрудника обновлены', 'success')
+            return redirect(url_for('admin.employees'))
+        except Exception:
+            db.session.rollback()
+            flash('Ошибка при сохранении изменений', 'danger')
+    return render_template('admin/add_employee.html', form=form, edit=True)
+
+
+@admin_bp.route('/employee/delete/<int:emp_id>', methods=['POST'])
+@login_required
+def delete_employee(emp_id):
+    emp = Employee.query.get_or_404(emp_id)
+    name = emp.full_name
+    db.session.delete(emp)
+    db.session.commit()
+    flash(f'Сотрудник {name} удален из базы', 'success')
+    return redirect(request.args.get('next') or url_for('admin.employees'))
 
 
 @admin_bp.route('/positions')
@@ -95,95 +190,28 @@ def positions():
 def add_position():
     form = PositionForm()
     form.department_id.choices = [(d.id, d.name) for d in Department.query.all()]
-
     if form.validate_on_submit():
+        existing_pos = Position.query.filter_by(
+            title=form.title.data,
+            department_id=form.department_id.data
+        ).first()
+        if existing_pos:
+            dept_name = dict(form.department_id.choices).get(form.department_id.data)
+            flash(f'Ошибка: Должность "{form.title.data}" уже есть в отделе "{dept_name}"!', 'danger')
+            return render_template('admin/add_position.html', form=form)
         new_position = Position(
             title=form.title.data,
             department_id=form.department_id.data,
         )
-        db.session.add(new_position)
-        db.session.commit()
-        flash(f'Должность "{new_position.title}" создана!', 'success')
-
-        next_page = request.args.get('next')
-        return redirect(next_page or url_for('admin.positions'))
-
+        try:
+            db.session.add(new_position)
+            db.session.commit()
+            flash(f'Должность "{new_position.title}" создана!', 'success')
+            return redirect(url_for('admin.positions'))
+        except Exception:
+            db.session.rollback()
+            flash('Ошибка при сохранении в базу данных', 'danger')
     return render_template('admin/add_position.html', form=form)
-
-
-@admin_bp.route('/department/edit/<int:dept_id>', methods=['GET', 'POST'])
-@login_required
-def edit_department(dept_id):
-    dept = Department.query.get_or_404(dept_id)
-    form = DepartmentForm(obj=dept)
-    form.parent_id.choices = [(0, '-- Корень --')] + [(d.id, d.name) for d in
-                                                      Department.query.filter(Department.id != dept_id).all()]
-
-    if form.validate_on_submit():
-        dept.name = form.name.data
-        dept.parent_id = form.parent_id.data if form.parent_id.data != 0 else None
-        db.session.commit()
-        flash('Отдел обновлен', 'success')
-        return redirect(url_for('admin.departments'))
-    return render_template('admin/add_departments.html', form=form, edit=True)
-
-
-@admin_bp.route('/employee/edit/<int:emp_id>', methods=['GET', 'POST'])
-@login_required
-def edit_employee(emp_id):
-    emp = Employee.query.get_or_404(emp_id)
-    form = EmployeeForm(obj=emp)
-    form.position_id.choices = [(p.id, f"{p.title} ({p.department.name})") for p in Position.query.all()]
-
-    if form.validate_on_submit():
-        emp.last_name = form.last_name.data
-        emp.first_name = form.first_name.data
-        emp.email = form.email.data
-        emp.phone = form.phone.data
-        emp.position_id = form.position_id.data
-        emp.is_active = form.is_active.data
-        db.session.commit()
-        flash('Данные сотрудника обновлены', 'success')
-        return redirect(request.args.get('next') or url_for('admin.employees'))
-    return render_template('admin/add_employee.html', form=form, edit=True)
-
-
-@admin_bp.route('/department/delete/<int:dept_id>', methods=['POST'])
-@login_required
-def delete_department(dept_id):
-    dept = Department.query.get_or_404(dept_id)
-    db.session.delete(dept)
-    db.session.commit()
-    flash(f'Отдел {dept.name} и вся его структура удалены', 'success')
-    return redirect(url_for('admin.departments'))
-
-
-@admin_bp.route('/position/delete/<int:pos_id>', methods=['POST'])
-@login_required
-def delete_position(pos_id):
-    pos = Position.query.get_or_404(pos_id)
-
-    affected_employees = Employee.query.filter_by(position_id=pos.id).all()
-
-    for emp in affected_employees:
-        emp.position_id = None
-        emp.is_active = False
-
-    db.session.delete(pos)
-    db.session.commit()
-    flash(f'Должность "{pos.title}" удалена. {len(affected_employees)} чел. переведены в архив.', 'warning')
-    return redirect(url_for('admin.positions'))
-
-
-@admin_bp.route('/employee/delete/<int:emp_id>', methods=['POST'])
-@login_required
-def delete_employee(emp_id):
-    emp = Employee.query.get_or_404(emp_id)
-    name = emp.full_name
-    db.session.delete(emp)
-    db.session.commit()
-    flash(f'Сотрудник {name} удален из базы', 'success')
-    return redirect(request.args.get('next') or url_for('admin.employees'))
 
 
 @admin_bp.route('/position/edit/<int:pos_id>', methods=['GET', 'POST'])
@@ -191,17 +219,41 @@ def delete_employee(emp_id):
 def edit_position(pos_id):
     pos = Position.query.get_or_404(pos_id)
     form = PositionForm(obj=pos)
-
     form.department_id.choices = [(d.id, d.name) for d in Department.query.all()]
-
     if form.validate_on_submit():
+        duplicate = Position.query.filter(
+            Position.title == form.title.data,
+            Position.department_id == form.department_id.data,
+            Position.id != pos_id
+        ).first()
+        if duplicate:
+            dept_name = dict(form.department_id.choices).get(form.department_id.data)
+            flash(f'Ошибка: В отделе "{dept_name}" уже существует должность "{form.title.data}"!', 'danger')
+            return render_template('admin/add_position.html', form=form, edit=True)
         pos.title = form.title.data
         pos.department_id = form.department_id.data
-        db.session.commit()
-        flash(f'Должность "{pos.title}" обновлена', 'success')
-        return redirect(url_for('admin.positions'))
-
+        try:
+            db.session.commit()
+            flash(f'Должность "{pos.title}" обновлена', 'success')
+            return redirect(url_for('admin.positions'))
+        except Exception:
+            db.session.rollback()
+            flash('Ошибка при обновлении данных', 'danger')
     return render_template('admin/add_position.html', form=form, edit=True)
+
+
+@admin_bp.route('/position/delete/<int:pos_id>', methods=['POST'])
+@login_required
+def delete_position(pos_id):
+    pos = Position.query.get_or_404(pos_id)
+    affected_employees = Employee.query.filter_by(position_id=pos.id).all()
+    for emp in affected_employees:
+        emp.position_id = None
+        emp.is_active = False
+    db.session.delete(pos)
+    db.session.commit()
+    flash(f'Должность "{pos.title}" удалена. {len(affected_employees)} чел. переведены в архив.', 'warning')
+    return redirect(url_for('admin.positions'))
 
 
 @admin_bp.route('/users')
@@ -231,14 +283,11 @@ def toggle_admin(user_id):
     if not current_user.is_admin:
         abort(403)
     user = User.query.get_or_404(user_id)
-
     if user.id == current_user.id:
         flash('Вы не можете лишить прав администратора самого себя', 'danger')
         return redirect(url_for('admin.user_list'))
-
     user.is_admin = not user.is_admin
     db.session.commit()
-
     status = "назначен администратором" if user.is_admin else "лишен прав администратора"
     flash(f'Пользователь {user.username} {status}', 'success')
     return redirect(url_for('admin.user_list'))

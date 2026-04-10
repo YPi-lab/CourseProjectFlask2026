@@ -2,13 +2,16 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, PasswordField, BooleanField
 from wtforms.fields.choices import SelectField
 from wtforms.fields.datetime import DateField
-from wtforms.validators import DataRequired, Length, EqualTo, Optional, Email
+from wtforms.validators import DataRequired, Length, EqualTo, Optional, Email, Regexp
 
 
 class RegisterForm(FlaskForm):
     username = StringField('Логин', validators=[DataRequired(), Length(min=4, max=20)])
-    password = PasswordField('Пароль', validators=[DataRequired()])
-    confirm_password = PasswordField('Подтвердите пароль', validators=[DataRequired(), EqualTo('password')])
+    password = PasswordField('Пароль', validators=[DataRequired(), Length(min=6, max=20),
+                                                   Regexp(r'^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$',
+                                                          message="Пароль должен содержать буквы и цифры")])
+    confirm_password = PasswordField('Подтвердите пароль',
+                                     validators=[DataRequired(), EqualTo('password', message="Пароли не совпадают")])
     submit = SubmitField('Зарегистрироваться')
 
 
