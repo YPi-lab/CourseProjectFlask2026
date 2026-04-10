@@ -2,22 +2,16 @@
 {% block title %} О компании {% endblock %}
 {% block content %}
     <div class="row align-items-center">
-        <div class="col-lg-6">
-            <h2 class="fw-bold mb-4">О компании</h2>
+        <div class="col-lg-8">
+            <h2 class="fw-bold mb-6">О компании</h2>
             <p><strong>Радиозавод "Вектор"</strong> — это сплав многолетнего опыта советской инженерной школы и
                 передовых технологий микроэлектроники. С 1995 года мы прошли путь от локального сборочного цеха до
                 высокотехнологичного предприятия полного цикла.</p>
             <p>Сегодня наш завод — это мощный <strong>R&D-центр</strong>. Мы проектируем сложнейшие системы «с нуля»,
                 обеспечивая технологический суверенитет в области радиосвязи.</p>
         </div>
-        <div class="col-lg-6">
-            <div class="p-5 bg-light border rounded-3 text-center">
-                <h3 class="text-primary">25+ лет</h3>
-                <p>на рынке электроники</p>
-                <hr>
-                <h3 class="text-primary">500+</h3>
-                <p>высококлассных специалистов</p>
-            </div>
+        <div class="col-lg-4">
+            <img src="{{ url_for('static', filename='images/logo_about.png') }}" alt="Logo" width="270" height="auto">
         </div>
     </div>
 {% endblock %}

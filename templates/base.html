@@ -2,43 +2,63 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %} {% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 <body class="bg-light">
-<div class="container">
-    <header class="d-flex flex-wrap align-items-center justify-content-center justify-content-md-between py-3 mb-4 border-bottom">
-        <ul class="nav nav-pills">
-            <li class="nav-item"><a href="{{ url_for('main.home') }}" class="nav-link active" aria-current="page">Главная</a>
-            </li>
-            <li class="nav-item"><a href="{{ url_for('main.about') }}" class="nav-link">О компании</a></li>
-            <li class="nav-item"><a href="{{ url_for('main.products') }}" class="nav-link">Продукция</a></li>
-            <li class="nav-item"><a href="{{ url_for('main.services') }}" class="nav-link">Услуги</a></li>
-            <li class="nav-item"><a href="{{ url_for('main.contact') }}" class="nav-link">Контакты</a></li>
-            {% if current_user.is_authenticated and current_user.is_admin %}
+<nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm mb-4">
+    <div class="container">
+        <a class="navbar-brand d-flex align-items-center" href="{{ url_for('main.home') }}">
+            <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo" width="45" height="auto"
+                 class="me-2">
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 <li class="nav-item">
-                    <a href="{{ url_for('admin.index') }}" class="nav-link active me-3">Кадровый учет</a>
+                    <a class="nav-link" href="{{ url_for('main.home') }}">Главная</a>
                 </li>
                 <li class="nav-item">
-                    <a href="{{ url_for('admin.user_list') }}" class="nav-link active">Пользователи</a>
+                    <a class="nav-link" href="{{ url_for('main.about') }}">О компании</a>
                 </li>
-            {% endif %}
-        </ul>
-        <div class="col-md-3 text-end">
-            {% if current_user.is_authenticated %}
-                <span class="navbar-text me-3">
-                    Привет, <strong>{{ current_user.username }}</strong>!
-                </span>
-                <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-danger me-2">Выйти</a>
-            {% else %}
-                <form>
-                    <a href="{{ url_for('auth.login') }}" class="btn btn-outline-primary me-2" role="button">Логин</a>
-                    <a href="{{ url_for('auth.register') }}" class="btn btn-primary" role="button">Регистрация</a>
-                </form>
-            {% endif %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('main.products') }}">Продукция</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('main.services') }}">Услуги</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('main.contact') }}">Контакты</a>
+                </li>
+                {% if current_user.is_authenticated and current_user.is_admin %}
+                    <li class="nav-item">
+                        <a href="{{ url_for('admin.index') }}" class="nav-link text-primary fw-semibold">Кадровый
+                            учет</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ url_for('admin.user_list') }}" class="nav-link text-primary fw-semibold">Пользователи</a>
+                    </li>
+                {% endif %}
+            </ul>
+            <div class="d-flex align-items-center">
+                {% if current_user.is_authenticated %}
+                    <span class="navbar-text me-3">
+                            Привет, <strong class="text-dark">{{ current_user.username }}</strong>!
+                        </span>
+                    <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-danger btn-sm">Выйти</a>
+                {% else %}
+                    <a href="{{ url_for('auth.login') }}" class="btn btn-outline-primary btn-sm me-2">Логин</a>
+                    <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-sm">Регистрация</a>
+                {% endif %}
+            </div>
         </div>
-    </header>
+    </div>
+</nav>
+<div class="container">
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
             {% for category, message in messages %}
