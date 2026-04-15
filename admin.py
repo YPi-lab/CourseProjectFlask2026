@@ -25,28 +25,39 @@ def departments():
     return render_template('admin/departments.html', departments=root_department)
 
 
+def get_department_tree(exclude_id=None):
+    parents = Department.query.filter_by(parent_id=None).order_by(Department.name).all()
+    choices = [('0', '--- КОРНЕВОЙ ОТДЕЛ ---')]
+    for parent in parents:
+        if exclude_id and parent.id == exclude_id:
+            continue
+        choices.append((str(parent.id), f"{parent.name.upper()}"))
+        children = parent.sub_departments.order_by(Department.name).all()
+        for child in children:
+            if exclude_id and child.id == exclude_id:
+                continue
+            choices.append((str(child.id), f"    - {child.name}"))
+    return choices
+
+
 @admin_bp.route('/departments/add', methods=['GET', 'POST'])
 @login_required
 def add_department():
     form = DepartmentForm()
-    existing_departments = Department.query.all()
-    choices = [(0, '--Корень--')]
-    for d in existing_departments:
-        choices.append((d.id, d.name))
-    form.parent_id.choices = choices
+    form.parent_id.choices = get_department_tree()
     if form.validate_on_submit():
         duplicate = Department.query.filter_by(name=form.name.data).first()
         if duplicate:
             flash(f'Ошибка: отдел "{form.name.data}" уже существует!', 'danger')
             return render_template('admin/add_departments.html', form=form)
-        parent_id = form.parent_id.data if form.parent_id.data != 0 else None
+        parent_id = int(form.parent_id.data) if form.parent_id.data != '0' else None
         new_department = Department(name=form.name.data, parent_id=parent_id)
         try:
             db.session.add(new_department)
             db.session.commit()
             flash('Структура обновлена!', 'success')
             return redirect(url_for('admin.departments'))
-        except Exception as e:
+        except Exception:
             db.session.rollback()
             flash('Произошла ошибка при сохранении в базу данных.', 'danger')
     return render_template('admin/add_departments.html', form=form)
@@ -57,8 +68,8 @@ def add_department():
 def edit_department(dept_id):
     dept = Department.query.get_or_404(dept_id)
     form = DepartmentForm(obj=dept)
-    form.parent_id.choices = [(0, '-- Корень --')] + [(d.id, d.name) for d in
-                                                      Department.query.filter(Department.id != dept_id).all()]
+    form.parent_id.choices = get_department_tree(exclude_id=dept_id)
+
     if form.validate_on_submit():
         duplicate = Department.query.filter(
             Department.name == form.name.data,
@@ -68,7 +79,7 @@ def edit_department(dept_id):
             flash(f'Ошибка: название "{form.name.data}" уже занято другим отделом!', 'danger')
             return render_template('admin/add_departments.html', form=form, edit=True)
         dept.name = form.name.data
-        dept.parent_id = form.parent_id.data if form.parent_id.data != 0 else None
+        dept.parent_id = int(form.parent_id.data) if form.parent_id.data != '0' else None
         try:
             db.session.commit()
             flash('Отдел обновлен', 'success')
@@ -76,6 +87,8 @@ def edit_department(dept_id):
         except Exception:
             db.session.rollback()
             flash('Ошибка при сохранении изменений', 'danger')
+    if request.method == 'GET':
+        form.parent_id.data = str(dept.parent_id or '0')
     return render_template('admin/add_departments.html', form=form, edit=True)
 
 
@@ -189,16 +202,21 @@ def positions():
 @login_required
 def add_position():
     form = PositionForm()
-    form.department_id.choices = [(d.id, d.name) for d in Department.query.all()]
+    # Используем иерархию отделов для привязки должности
+    # Убираем '0', так как должность обязана быть в отделе
+    form.department_id.choices = [(c[0], c[1]) for c in get_department_tree() if c[0] != '0']
+
     if form.validate_on_submit():
         existing_pos = Position.query.filter_by(
             title=form.title.data,
             department_id=form.department_id.data
         ).first()
+
         if existing_pos:
             dept_name = dict(form.department_id.choices).get(form.department_id.data)
             flash(f'Ошибка: Должность "{form.title.data}" уже есть в отделе "{dept_name}"!', 'danger')
             return render_template('admin/add_position.html', form=form)
+
         new_position = Position(
             title=form.title.data,
             department_id=form.department_id.data,
@@ -211,6 +229,7 @@ def add_position():
         except Exception:
             db.session.rollback()
             flash('Ошибка при сохранении в базу данных', 'danger')
+
     return render_template('admin/add_position.html', form=form)
 
 
@@ -219,19 +238,23 @@ def add_position():
 def edit_position(pos_id):
     pos = Position.query.get_or_404(pos_id)
     form = PositionForm(obj=pos)
-    form.department_id.choices = [(d.id, d.name) for d in Department.query.all()]
+    form.department_id.choices = [(c[0], c[1]) for c in get_department_tree() if c[0] != '0']
+
     if form.validate_on_submit():
         duplicate = Position.query.filter(
             Position.title == form.title.data,
             Position.department_id == form.department_id.data,
             Position.id != pos_id
         ).first()
+
         if duplicate:
             dept_name = dict(form.department_id.choices).get(form.department_id.data)
             flash(f'Ошибка: В отделе "{dept_name}" уже существует должность "{form.title.data}"!', 'danger')
             return render_template('admin/add_position.html', form=form, edit=True)
+
         pos.title = form.title.data
         pos.department_id = form.department_id.data
+
         try:
             db.session.commit()
             flash(f'Должность "{pos.title}" обновлена', 'success')
@@ -239,6 +262,7 @@ def edit_position(pos_id):
         except Exception:
             db.session.rollback()
             flash('Ошибка при обновлении данных', 'danger')
+
     return render_template('admin/add_position.html', form=form, edit=True)
 
 

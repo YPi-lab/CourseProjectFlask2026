@@ -9,13 +9,39 @@
             <div class="card-body">
                 <form method="post">
                     {{ form.hidden_tag() }}
-                    {% for field in form if field.name != 'csrf_token' and field.name !='submit' %}
+
+                    {% for field in form if field.name not in ['csrf_token', 'submit'] %}
                         <div class="mb-3">
-                            {{ field.label(class="form-label") }}
-                            {{ field(class="form-control" if field.type != 'SelectField' else "form-select") }}
+                            {{ field.label(class="form-label fw-semibold") }}
+
+                            {% if field.name == 'parent_id' %}
+                                <select class="form-select" name="{{ field.name }}" id="{{ field.id }}">
+                                    {% for value, label in field.choices %}
+                                        <option value="{{ value }}"
+                                                {% if field.data|string == value|string %}selected{% endif %}
+                                                {% if '-' in label or '---' in label %}
+                                                style="font-weight: bold; background-color: #f8f9fa;"
+                                                {% endif %}>
+                                            {# Важно: заменяем пробелы на &nbsp; для отображения отступа #}
+                                            {{ label|replace('    ', '&nbsp;&nbsp;&nbsp;&nbsp;')|safe }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            {% else %}
+                                {{ field(class="form-control") }}
+                            {% endif %}
+
+                            {% if field.errors %}
+                                {% for error in field.errors %}
+                                    <div class="text-danger small mt-1">{{ error }}</div>
+                                {% endfor %}
+                            {% endif %}
                         </div>
                     {% endfor %}
-                    <button type="submit" class="btn btn-primary w-100">{{ form.submit.label.text }}</button>
+
+                    <button type="submit" class="btn btn-primary w-100 py-2">
+                        {{ 'Сохранить изменения' if edit else 'Создать отдел' }}
+                    </button>
                 </form>
             </div>
         </div>
