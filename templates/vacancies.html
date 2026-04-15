@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Доступные вакансии</h2>
+        {% if current_user.is_admin %}
+        <form method="POST" class="d-flex gap-2">
+            <input type="hidden" name="action" value="add">
+            <select name="position_id" class="form-select form-select-sm" style="width: 250px;" required>
+                <option value="" disabled selected>Добавить должность...</option>
+                {% for p in all_positions %}
+                    <option value="{{ p.id }}">{{ p.title }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="btn btn-success btn-sm">Опубликовать</button>
+        </form>
+        {% endif %}
+    </div>
+
+    <div class="list-group shadow-sm">
+        {% for v in published %}
+        <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center p-3">
+            <div>
+                <h5 class="mb-1 text-primary">{{ v.position.title }}</h5>
+                <small class="text-muted">Отдел: {{ v.position.department.name }}</small>
+            </div>
+
+            <div class="d-flex gap-2">
+                {% if current_user.is_admin %}
+                <form method="POST" class="m-0">
+                    <input type="hidden" name="action" value="remove">
+                    <input type="hidden" name="position_id" value="{{ v.position_id }}">
+                    <button type="submit" class="btn btn-outline-danger btn-sm">Удалить</button>
+                </form>
+                {% endif %}
+
+                <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#contactModal{{ v.id }}">
+                    Откликнуться
+                </button>
+            </div>
+        </div>
+
+        <div class="modal fade" id="contactModal{{ v.id }}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Конфиденциальная информация</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body text-center">
+                        <p class="mb-2 text-muted">Для отклика на вакансию <strong>{{ v.position.title }}</strong> свяжитесь с отделом кадров:</p>
+                        <hr>
+                        <div class="mb-3">
+                            <i class="bi bi-envelope"></i> <strong>Email:</strong>
+                            <a href="mailto:hr@radiozavod-vector.ru">hr@radiozavod-vector.ru</a>
+                        </div>
+                        <div>
+                            <i class="bi bi-telephone"></i> <strong>Телефон:</strong>
+                            <span>+7 (800) 555-35-35</span>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="list-group-item text-center py-4 text-muted">
+            На данный момент открытых вакансий нет.
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

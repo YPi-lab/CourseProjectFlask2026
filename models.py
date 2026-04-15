@@ -68,3 +68,10 @@ class Employee(db.Model):
 
     def __repr__(self):
         return f'<Employee {self.last_name}>'
+
+
+class ActiveVacancy(db.Model):
+    __tablename__ = 'active_vacancy'
+    id = db.Column(db.Integer, primary_key=True)
+    position_id = db.Column(db.Integer, db.ForeignKey('position.id'), nullable=False)
+    position = db.relationship('Position', backref='active_info')
