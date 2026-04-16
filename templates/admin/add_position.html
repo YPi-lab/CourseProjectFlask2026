@@ -2,7 +2,6 @@
 
 {% block content %}
     <div class="col-md-6 mx-auto">
-        {# Блок общих ошибок формы #}
         {% if form.errors %}
             <div class="alert alert-danger alert-dismissible fade show" role="alert">
                 <strong>Ошибка!</strong> Проверьте правильность заполнения полей.
@@ -35,7 +34,6 @@
                                 {% for value, label in form.department_id.choices %}
                                     <option value="{{ value }}"
                                         {% if form.department_id.data|string == value|string %}selected{% endif %}
-                                        {# Стилизация родительских отделов #}
                                         {% if '●' in label %}style="font-weight: bold; background-color: #f8f9fa;"{% endif %}>
                                         {{ label|replace('    ', '&nbsp;&nbsp;&nbsp;&nbsp;')|safe }}
                                     </option>

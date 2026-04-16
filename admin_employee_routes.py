@@ -1,0 +1,83 @@
+from flask import flash, redirect, render_template, request, url_for
+
+from admin_core import admin_required
+from db_utils import commit_with_handling
+from forms import EmployeeForm
+from models import Employee, Position, db
+
+
+def get_position_choices():
+    return [(p.id, f"{p.title} ({p.department.name})") for p in Position.query.all()]
+
+
+def register_employee_routes(admin_bp):
+    @admin_bp.route("/employees")
+    @admin_required
+    def employees():
+        all_employees = Employee.query.all()
+        return render_template("admin/employees.html", employees=all_employees)
+
+    @admin_bp.route("/employee/add", methods=["GET", "POST"])
+    @admin_required
+    def add_employee():
+        form = EmployeeForm()
+        form.position_id.choices = get_position_choices()
+        if form.validate_on_submit():
+            if Employee.query.filter_by(email=form.email.data).first():
+                flash(f"Ошибка: Почта {form.email.data} уже используется!", "danger")
+                return render_template("admin/add_employee.html", form=form)
+            if Employee.query.filter_by(phone=form.phone.data).first():
+                flash(f"Ошибка: Телефон {form.phone.data} уже зарегистрирован!", "danger")
+                return render_template("admin/add_employee.html", form=form)
+
+            db.session.add(
+                Employee(
+                    last_name=form.last_name.data,
+                    first_name=form.first_name.data,
+                    middle_name=form.middle_name.data,
+                    email=form.email.data,
+                    phone=form.phone.data,
+                    hire_date=form.hire_date.data,
+                    position_id=form.position_id.data,
+                    is_active=form.is_active.data,
+                )
+            )
+            if commit_with_handling("Сотрудник добавлен", "Не удалось сохранить данные сотрудника."):
+                return redirect(url_for("admin.employees"))
+        return render_template("admin/add_employee.html", form=form)
+
+    @admin_bp.route("/employee/edit/<int:emp_id>", methods=["GET", "POST"])
+    @admin_required
+    def edit_employee(emp_id):
+        emp = Employee.query.get_or_404(emp_id)
+        form = EmployeeForm(obj=emp)
+        form.position_id.choices = get_position_choices()
+        if form.validate_on_submit():
+            if Employee.query.filter(Employee.email == form.email.data, Employee.id != emp_id).first():
+                flash(f"Ошибка: Email {form.email.data} уже занят!", "danger")
+                return render_template("admin/add_employee.html", form=form, edit=True)
+            if Employee.query.filter(Employee.phone == form.phone.data, Employee.id != emp_id).first():
+                flash(f"Ошибка: Телефон {form.phone.data} уже занят!", "danger")
+                return render_template("admin/add_employee.html", form=form, edit=True)
+
+            emp.last_name = form.last_name.data
+            emp.first_name = form.first_name.data
+            emp.middle_name = form.middle_name.data
+            emp.email = form.email.data
+            emp.phone = form.phone.data
+            emp.hire_date = form.hire_date.data
+            emp.position_id = form.position_id.data
+            emp.is_active = form.is_active.data
+            if commit_with_handling("Данные сотрудника обновлены", "Ошибка при сохранении изменений сотрудника."):
+                return redirect(url_for("admin.employees"))
+        return render_template("admin/add_employee.html", form=form, edit=True)
+
+    @admin_bp.route("/employee/delete/<int:emp_id>", methods=["POST"])
+    @admin_required
+    def delete_employee(emp_id):
+        emp = Employee.query.get_or_404(emp_id)
+        name = emp.full_name
+        db.session.delete(emp)
+        if commit_with_handling(f"Сотрудник {name} удален из базы", "Не удалось удалить сотрудника."):
+            return redirect(request.args.get("next") or url_for("admin.employees"))
+        return redirect(request.args.get("next") or url_for("admin.employees"))

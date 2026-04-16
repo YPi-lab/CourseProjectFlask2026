@@ -1,28 +1,27 @@
 {% extends "base.html" %}
-{% block title %} Регистрация {% endblock %}
+{% block title %} Регистрация пользователя {% endblock %}
 
 {% block content %}
-<div class="container d-flex justify-content-center align-items-center vh-100">
-    <div class="card shadow p-4 text-center" style="max-width: 400px; width: 100%;">
+<div class="auth-wrap">
+    <div class="auth-panel">
         <form method="POST">
             {{ form.hidden_tag() }}
-            <h1 class="h3 mb-3 fw-normal">Регистрация</h1>
+            <div class="section-kicker">Новая учетная запись</div>
+            <h1 class="h3 mb-3">Регистрация пользователя</h1>
+            <p class="muted-copy mb-4">После регистрации пользователь сможет работать с внутренними сервисами в рамках назначенных прав доступа.</p>
 
-            {# Поле Username #}
             <div class="form-floating mb-2">
                 {{ form.username(class="form-control" + (" is-invalid" if form.username.errors else ""), id="floatingUsername", placeholder="Логин") }}
                 <label for="floatingUsername">{{ form.username.label }}</label>
                 {% for error in form.username.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
             </div>
 
-            {# Поле Password #}
             <div class="form-floating mb-2">
                 {{ form.password(class="form-control" + (" is-invalid" if form.password.errors else ""), id="floatingPassword", placeholder="Пароль") }}
                 <label for="floatingPassword">{{ form.password.label }}</label>
                 {% for error in form.password.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
             </div>
 
-            {# Поле Confirm Password #}
             <div class="form-floating mb-3">
                 {{ form.confirm_password(class="form-control" + (" is-invalid" if form.confirm_password.errors else ""), id="floatingConfirm", placeholder="Подтвердите пароль") }}
                 <label for="floatingConfirm">{{ form.confirm_password.label }}</label>
@@ -32,7 +31,6 @@
             {{ form.submit(class="btn btn-primary w-100 py-2") }}
 
             <div class="mt-3">
-                {# Проверь, чтобы имя эндпоинта 'auth.login' было верным #}
                 <a href="{{ url_for('auth.login') }}" class="text-decoration-none">Уже есть аккаунт? Войти</a>
             </div>
         </form>

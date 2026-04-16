@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %} Внутренняя ошибка {% endblock %}
+{% block content %}
+    <div class="content-panel text-center">
+        <span class="section-kicker">Ошибка 500</span>
+        <h1 class="mb-3">Внутренняя ошибка сервера</h1>
+        <p class="section-lead mb-4">Во время обработки запроса произошла непредвиденная ошибка. Повторите попытку позже или перейдите в другой раздел сайта.</p>
+        <a href="{{ url_for('main.home') }}" class="btn btn-primary px-4">На главную</a>
+    </div>
+{% endblock %}

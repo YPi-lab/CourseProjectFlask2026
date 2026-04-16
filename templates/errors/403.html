@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %} Доступ запрещен {% endblock %}
+{% block content %}
+    <div class="content-panel text-center">
+        <span class="section-kicker">Ошибка 403</span>
+        <h1 class="mb-3">Доступ запрещен</h1>
+        <p class="section-lead mb-4">Запрошенный раздел относится к внутренним сервисам предприятия и недоступен для текущего пользователя.</p>
+        <a href="{{ url_for('main.home') }}" class="btn btn-primary px-4">На главную</a>
+    </div>
+{% endblock %}

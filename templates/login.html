@@ -1,12 +1,14 @@
 {% extends "base.html" %}
-{% block title %} Вход {% endblock %}
+{% block title %} Вход во внутреннюю систему {% endblock %}
 
 {% block content %}
-<div class="container d-flex justify-content-center align-items-center vh-100">
-    <div class="card shadow p-4 text-center" style="max-width: 400px; width: 100%;">
+<div class="auth-wrap">
+    <div class="auth-panel">
         <form method="POST">
             {{ form.hidden_tag() }}
-            <h1 class="h3 mb-3 fw-normal">Пожалуйста, войдите!</h1>
+            <div class="section-kicker">Внутренний доступ</div>
+            <h1 class="h3 mb-3">Вход во внутреннюю систему</h1>
+            <p class="muted-copy mb-4">Авторизация требуется для доступа к внутренним разделам и кадровому учету предприятия.</p>
 
             <div class="form-floating mb-2">
                 {{ form.username(class="form-control", id="floatingInput", placeholder="Логин") }}

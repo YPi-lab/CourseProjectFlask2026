@@ -22,7 +22,6 @@
                                                 {% if '-' in label or '---' in label %}
                                                 style="font-weight: bold; background-color: #f8f9fa;"
                                                 {% endif %}>
-                                            {# Важно: заменяем пробелы на &nbsp; для отображения отступа #}
                                             {{ label|replace('    ', '&nbsp;&nbsp;&nbsp;&nbsp;')|safe }}
                                         </option>
                                     {% endfor %}

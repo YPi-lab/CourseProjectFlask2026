@@ -4,36 +4,11 @@
     <meta charset="UTF-8">
     <title>{% block title %}Админ-панель{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/site.css') }}">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <style>
-        body {
-            min-height: 100vh;
-            display: flex;
-            background-color: #f8f9fa;
-        }
-
-        .sidebar {
-            width: 280px;
-            height: 100vh;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-        }
-
-        .main-content {
-            flex-grow: 1;
-            padding: 2rem;
-            overflow-y: auto;
-        }
-
-        .nav-link.logout-link:hover {
-            background-color: #dc3545;
-            color: white !important;
-        }
-    </style>
     {% block extra_css %}{% endblock %}
 </head>
-<body>
+<body class="admin-layout">
 <div class="d-flex flex-column flex-shrink-0 p-3 text-bg-dark sidebar">
     <a href="{{ url_for('admin.index') }}"
        class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
@@ -77,6 +52,13 @@
 </div>
 <main class="main-content">
     <div class="container-fluid">
+        <div class="admin-header">
+            <div>
+                <div class="section-kicker mb-1">Администрирование</div>
+                <h1 class="h3 mb-0">Управление кадровой системой</h1>
+            </div>
+            <div class="admin-badge">{{ current_user.username }}</div>
+        </div>
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}

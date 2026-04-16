@@ -1,13 +1,41 @@
 {% extends "base.html" %}
 {% block title %} Контакты {% endblock %}
 {% block content %}
-    <div class="row">
-        <div class="col-md-5">
-            <h2 class="fw-bold mb-4">Контакты</h2>
-            <p><strong>Адрес:</strong> 123456, г. Москва, ул. Юбилейная, д. 10</p>
-            <p><strong>Телефон:</strong> +7 (495) 000-00-00</p>
-            <p><strong>E-mail:</strong> info@vector-radio.ru</p>
-            <p><strong>Режим работы:</strong> Пн-Пт с 08:00 до 17:00</p>
+    <div class="content-panel">
+        <div class="row g-4">
+            <div class="col-lg-6">
+                <span class="section-kicker">Связь</span>
+                <h2 class="fw-bold mb-4">Контакты предприятия</h2>
+                <p class="section-lead mb-4">Для взаимодействия с предприятием используйте приведенные ниже контактные данные.</p>
+                <div class="contact-list">
+                    <div class="contact-item">
+                        <strong>Адрес</strong>
+                        <div class="muted-copy">123456, г. Москва, ул. Юбилейная, д. 10</div>
+                    </div>
+                    <div class="contact-item">
+                        <strong>Телефон</strong>
+                        <div class="muted-copy">+7 (495) 000-00-00</div>
+                    </div>
+                    <div class="contact-item">
+                        <strong>E-mail</strong>
+                        <div class="muted-copy">info@vector-radio.ru</div>
+                    </div>
+                    <div class="contact-item">
+                        <strong>Режим работы</strong>
+                        <div class="muted-copy">Пн-Пт с 08:00 до 17:00</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="feature-card h-100">
+                    <h4 class="mb-3">Отдел кадров</h4>
+                    <p class="muted-copy">По вопросам трудоустройства рекомендуется использовать раздел «Вакансии» или
+                        обратиться по официальным контактам предприятия.</p>
+                    <div class="mt-4">
+                        <a href="{{ url_for('main.vacancies') }}" class="btn btn-primary px-4">Перейти к вакансиям</a>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 {% endblock %}

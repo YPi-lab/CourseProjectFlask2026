@@ -1,7 +1,9 @@
 from flask import Blueprint, render_template, redirect, url_for, flash
 from flask_login import login_user, logout_user, login_required
+from sqlalchemy.exc import SQLAlchemyError
 from werkzeug.security import generate_password_hash, check_password_hash
 
+from db_utils import commit_with_handling
 from forms import RegisterForm, LoginForm
 from models import db, User
 
@@ -18,14 +20,12 @@ def register():
             return render_template('registration.html', form=form)
         hashed_password = generate_password_hash(form.password.data, method='pbkdf2')
         new_user = User(username=form.username.data, password=hashed_password)
-        try:
-            db.session.add(new_user)
-            db.session.commit()
-            flash('Вы успешно зарегистрировались! Теперь войдите в систему.', 'success')
+        db.session.add(new_user)
+        if commit_with_handling(
+            'Регистрация завершена. Теперь выполните вход в систему.',
+            'Не удалось завершить регистрацию пользователя.'
+        ):
             return redirect(url_for('auth.login'))
-        except Exception as e:
-            db.session.rollback()
-            flash('Произошла ошибка при сохранении в базу данных.', 'danger')
     return render_template('registration.html', form=form)
 
 

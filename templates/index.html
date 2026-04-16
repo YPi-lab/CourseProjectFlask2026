@@ -1,31 +1,71 @@
 {% extends "base.html" %}
 {% block title %} Главное меню {% endblock %}
 {% block content %}
-    <section class="py-5 bg-white">
-        <div class="container text-center">
-            <h2 class="mb-5 fw-bold">Почему выбирают нас</h2>
-            <div class="row g-4">
-                <div class="col-md-4">
-                    <div class="p-4 border rounded shadow-sm">
-                        <h3 class="text-primary h1">01</h3>
-                        <h5 class="fw-bold">Полный цикл</h5>
-                        <p class="text-muted">От идеи и проектирования до серийного выпуска и сервиса.</p>
+    <section class="hero-panel mb-5">
+        <div class="row g-0 align-items-stretch">
+            <div class="col-lg-7">
+                <div class="hero-copy">
+                    <span class="hero-kicker">Радиозавод Вектор</span>
+                    <h1 class="hero-title">Производство радиоэлектронной продукции полного цикла.</h1>
+                    <p class="hero-text">На сайте размещены сведения о предприятии, производственных направлениях,
+                        оказываемых услугах и открытых вакансиях. Для внутренних задач используется корпоративная
+                        система кадрового учета.</p>
+                    <div class="d-flex flex-wrap gap-3 mt-4">
+                        <a href="{{ url_for('main.products') }}" class="btn btn-primary px-4 py-2">Продукция</a>
+                        <a href="{{ url_for('main.vacancies') }}" class="btn btn-outline-primary px-4 py-2">Вакансии</a>
+                    </div>
+                    <div class="hero-metrics">
+                        <div class="metric-card">
+                            <span class="metric-value">1995</span>
+                            <span class="metric-label">год основания</span>
+                        </div>
+                        <div class="metric-card">
+                            <span class="metric-value">4</span>
+                            <span class="metric-label">направления продукции</span>
+                        </div>
+                        <div class="metric-card">
+                            <span class="metric-value">1</span>
+                            <span class="metric-label">внутренняя кадровая система</span>
+                        </div>
                     </div>
                 </div>
-                <div class="col-md-4">
-                    <div class="p-4 border rounded shadow-sm">
-                        <h3 class="text-primary h1">02</h3>
-                        <h5 class="fw-bold">Гарантия качества</h5>
-                        <p class="text-muted">Многоступенчатый контроль ОТК и соответствие госстандартам.</p>
+            </div>
+            <div class="col-lg-5">
+                <div class="hero-side d-flex flex-column justify-content-between">
+                    <div class="hero-badge">Сайт предприятия</div>
+                    <div>
+                        <h3 class="mb-3">Производство, услуги и кадровые сервисы</h3>
+                        <p class="mb-0 opacity-75">Публичные разделы доступны посетителям сайта. Внутренние кадровые
+                            функции используются уполномоченными сотрудниками предприятия.</p>
                     </div>
                 </div>
-                <div class="col-md-4">
-                    <div class="p-4 border rounded shadow-sm">
-                        <h3 class="text-primary h1">03</h3>
-                        <h5 class="fw-bold">R&D Центр</h5>
-                        <p class="text-muted">Собственное конструкторское бюро для нестандартных задач.</p>
-                    </div>
-                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="mb-4">
+        <div class="d-flex justify-content-between align-items-end flex-wrap gap-3 mb-4">
+            <div>
+                <span class="section-kicker">Разделы сайта</span>
+                <h2 class="mb-0">Что доступно на сайте</h2>
+            </div>
+            <p class="section-lead mb-0">Публичная часть сайта отражает основные направления деятельности предприятия.</p>
+        </div>
+        <div class="info-grid">
+            <div class="feature-card">
+                <div class="feature-index">01</div>
+                <h5>О предприятии</h5>
+                <p class="muted-copy mb-0">Общие сведения о заводе, профиле деятельности и производственном цикле.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-index">02</div>
+                <h5>Продукция и услуги</h5>
+                <p class="muted-copy mb-0">Основные направления выпускаемой продукции и производственные компетенции.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-index">03</div>
+                <h5>Вакансии и кадровый учет</h5>
+                <p class="muted-copy mb-0">Вакансии доступны посетителям сайта, а кадровый учет работает как внутренний сервис.</p>
             </div>
         </div>
     </section>

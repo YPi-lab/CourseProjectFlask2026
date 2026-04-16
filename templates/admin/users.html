@@ -1,6 +1,6 @@
-{% extends "base.html" %}
+{% extends "admin/base_admin.html" %}
 {% block content %}
-    <div class="container mt-4">
+    <div class="content-panel">
         <h2 class="mb-4">Пользователи сайта</h2>
         <table class="table table-hover align-middle shadow-sm bg-white">
             <thead class="table-light">
@@ -24,12 +24,14 @@
                     <td class="text-end">
                         <form action="{{ url_for('admin.toggle_admin', user_id=user.id) }}" method="POST"
                               class="d-inline">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                             <button class="btn btn-sm {{ 'btn-outline-warning' if user.is_admin else 'btn-outline-success' }}">
                                 {{ 'Снять админа' if user.is_admin else 'Сделать админом' }}
                             </button>
                         </form>
                         <form action="{{ url_for('admin.delete_user', user_id=user.id) }}" method="POST"
                               class="d-inline" onsubmit="return confirm('Удалить пользователя и его данные?')">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                             <button class="btn btn-sm btn-outline-danger">Удалить</button>
                         </form>
                     </td>
