@@ -38,7 +38,7 @@ class EmployeeForm(FlaskForm):
     last_name = StringField('Фамилия', validators=[DataRequired()])
     first_name = StringField('Имя', validators=[DataRequired()])
     middle_name = StringField('Отчество', validators=[Optional()])
-    email = StringField('Email', validators=[DataRequired(), Email()])
+    email = StringField('Эл. почта', validators=[DataRequired(), Email()])
     phone = StringField('Телефон', validators=[DataRequired()])
 
     hire_date = DateField('Дата активации', format='%Y-%m-%d', validators=[Optional()])

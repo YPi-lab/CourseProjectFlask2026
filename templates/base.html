@@ -17,7 +17,7 @@
 <nav class="navbar navbar-expand-lg site-navbar sticky-top mb-4">
     <div class="container">
         <a class="navbar-brand navbar-shell" href="{{ url_for('main.home') }}">
-            <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo" width="45" height="auto"
+            <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Логотип предприятия" width="45" height="auto"
                  class="me-2 brand-mark">
             <span class="brand-block">
                 <span class="brand-title">Радиозавод «Вектор»</span>
@@ -25,7 +25,7 @@
             </span>
         </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Переключить навигацию">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
@@ -80,7 +80,7 @@
             {% for category, message in messages %}
                 <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
                     {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Закрыть"></button>
                 </div>
             {% endfor %}
         {% endif %}

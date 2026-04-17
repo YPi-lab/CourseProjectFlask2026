@@ -3,5 +3,6 @@ __pycache__/
 .DS_Store
 
 .venv/
+docs/
 instance/*.db
 instance/*.bak.*
