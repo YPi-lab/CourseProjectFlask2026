@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date
 
 from flask_login import UserMixin
 from flask_sqlalchemy import SQLAlchemy
@@ -58,7 +58,7 @@ class Employee(db.Model):
     middle_name = db.Column(db.String(150))
     email = db.Column(db.String(255), unique=True, nullable=False)
     phone = db.Column(db.String(150), unique=True, nullable=False)
-    hire_date = db.Column(db.DateTime, default=datetime.utcnow)
+    hire_date = db.Column(db.Date, default=date.today)
     is_active = db.Column(db.Boolean, default=True)
     position_id = db.Column(db.Integer, db.ForeignKey('position.id'), nullable=True)
 

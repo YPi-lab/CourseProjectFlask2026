@@ -51,6 +51,15 @@ a {
     box-shadow: 0 3px 12px rgba(31, 41, 51, 0.04);
 }
 
+.site-navbar .navbar-collapse {
+    gap: 1rem;
+}
+
+.site-navbar .navbar-nav {
+    align-items: center;
+    row-gap: 0.35rem;
+}
+
 .navbar-shell {
     display: flex;
     align-items: center;
@@ -91,6 +100,40 @@ a {
 .nav-link-internal {
     color: var(--brand-primary) !important;
     font-weight: 600 !important;
+    background: transparent;
+}
+
+.admin-menu .dropdown-menu {
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-soft);
+    border-radius: 8px;
+}
+
+.admin-menu .dropdown-toggle::after {
+    margin-left: 0.35rem;
+    vertical-align: 0.15em;
+}
+
+.admin-menu .dropdown-item {
+    font-size: 0.95rem;
+}
+
+.admin-menu .dropdown-item:active,
+.admin-menu .dropdown-item:hover {
+    background: var(--brand-primary-soft);
+    color: var(--brand-primary-dark);
+}
+
+.navbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+    flex-wrap: wrap;
+}
+
+.navbar-actions .navbar-text {
+    margin-bottom: 0;
 }
 
 .brand-mark {
@@ -343,6 +386,15 @@ a {
     .hero-metrics,
     .info-grid {
         grid-template-columns: 1fr;
+    }
+
+    .site-navbar .navbar-nav {
+        align-items: stretch;
+    }
+
+    .navbar-actions {
+        margin-top: 0.75rem;
+        justify-content: flex-start;
     }
 
     .admin-layout {
