@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% block title %} Вакансии {% endblock %}
 {% block content %}
 <div class="vacancy-shell">
     <div class="content-panel">
@@ -7,31 +8,35 @@
             <h2 class="mb-2">Доступные вакансии</h2>
             <p class="section-lead mb-0">На странице представлены актуальные вакансии предприятия. Просмотр доступен авторизованным пользователям.</p>
         </div>
-        <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
             {% if current_user.is_admin %}
-                <form method="POST" class="d-flex gap-2">
+                <form method="POST" class="row row-cols-1 row-cols-md-auto g-2 align-items-center mb-0">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <input type="hidden" name="action" value="add">
-                    <select name="position_id" class="form-select form-select-sm" style="width: 250px;" required>
-                        <option value="" disabled selected>Добавить должность...</option>
-                        {% for p in all_positions %}
-                            <option value="{{ p.id }}">{{ p.title }}</option>
-                        {% endfor %}
-                    </select>
-                    <button type="submit" class="btn btn-success btn-sm">Опубликовать</button>
+                    <div class="col-12">
+                        <select name="position_id" class="form-select form-select-sm" required>
+                            <option value="" disabled selected>Добавить должность...</option>
+                            {% for p in all_positions %}
+                                <option value="{{ p.id }}">{{ p.title }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-success btn-sm w-100">Опубликовать</button>
+                    </div>
                 </form>
             {% endif %}
         </div>
 
         <div class="list-group shadow-sm">
             {% for v in published %}
-                <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center p-3">
+                <div class="list-group-item list-group-item-action d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 p-3">
                     <div>
                         <h5 class="mb-1 text-primary">{{ v.position.title }}</h5>
                         <small class="text-muted">Отдел: {{ v.position.department.name }}</small>
                     </div>
 
-                    <div class="d-flex gap-2">
+                    <div class="d-flex flex-wrap gap-2">
                         {% if current_user.is_admin %}
                             <form method="POST" class="m-0">
                                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -58,11 +63,11 @@
                                 <p class="mb-2 text-muted">Для отклика на вакансию <strong>{{ v.position.title }}</strong> свяжитесь с отделом кадров:</p>
                                 <hr>
                                 <div class="mb-3">
-                                    <i class="bi bi-envelope"></i> <strong>Эл. почта:</strong>
+                                    <strong>Эл. почта:</strong>
                                     <a href="mailto:hr@radiozavod-vector.ru">hr@radiozavod-vector.ru</a>
                                 </div>
                                 <div>
-                                    <i class="bi bi-telephone"></i> <strong>Телефон:</strong>
+                                    <strong>Телефон:</strong>
                                     <span>+7 (800) 555-35-35</span>
                                 </div>
                             </div>

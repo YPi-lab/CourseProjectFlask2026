@@ -1,9 +1,9 @@
 from flask import flash, redirect, render_template, url_for
 from flask_login import current_user
 
-from admin_core import admin_required
-from db_utils import commit_with_handling
-from models import User, db
+from .admin_core import admin_required
+from project_app.utils.db_utils import commit_with_handling
+from project_app.models import User, db
 
 
 def register_user_routes(admin_bp):
@@ -16,7 +16,7 @@ def register_user_routes(admin_bp):
     @admin_bp.route("/delete_user/<int:user_id>", methods=["POST"])
     @admin_required
     def delete_user(user_id):
-        user = User.query.get_or_404(user_id)
+        user = db.get_or_404(User, user_id)
         if user.id == current_user.id:
             flash("Нельзя удалить текущего администратора из своей сессии.", "danger")
             return redirect(url_for("admin.user_list"))
@@ -30,7 +30,7 @@ def register_user_routes(admin_bp):
     @admin_bp.route("/toggle_admin/<int:user_id>", methods=["POST"])
     @admin_required
     def toggle_admin(user_id):
-        user = User.query.get_or_404(user_id)
+        user = db.get_or_404(User, user_id)
         if user.id == current_user.id:
             flash("Вы не можете лишить прав администратора самого себя", "danger")
             return redirect(url_for("admin.user_list"))

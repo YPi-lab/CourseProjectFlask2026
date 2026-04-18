@@ -1,47 +1,49 @@
 {% extends "admin/base_admin.html" %}
 
 {% block content %}
-    <div class="col-md-6 mx-auto">
-        <div class="card shadow-sm border-0">
-            <div class="card-header bg-white py-3 fw-bold">
-                {{ 'Редактирование отдела' if edit else 'Новый отдел' }}
-            </div>
-            <div class="card-body">
-                <form method="post">
-                    {{ form.hidden_tag() }}
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-8 col-xl-6">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white py-3 fw-bold">
+                    {{ 'Редактирование отдела' if edit else 'Новый отдел' }}
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {{ form.hidden_tag() }}
 
-                    {% for field in form if field.name not in ['csrf_token', 'submit'] %}
-                        <div class="mb-3">
-                            {{ field.label(class="form-label fw-semibold") }}
+                        {% for field in form if field.name not in ['csrf_token', 'submit'] %}
+                            <div class="mb-3">
+                                {{ field.label(class="form-label fw-semibold") }}
 
-                            {% if field.name == 'parent_id' %}
-                                <select class="form-select" name="{{ field.name }}" id="{{ field.id }}">
-                                    {% for value, label in field.choices %}
-                                        <option value="{{ value }}"
-                                                {% if field.data|string == value|string %}selected{% endif %}
-                                                {% if '-' in label or '---' in label %}
-                                                style="font-weight: bold; background-color: #f8f9fa;"
-                                                {% endif %}>
-                                            {{ label|replace('    ', '&nbsp;&nbsp;&nbsp;&nbsp;')|safe }}
-                                        </option>
+                                {% if field.name == 'parent_id' %}
+                                    <select class="form-select" name="{{ field.name }}" id="{{ field.id }}">
+                                        {% for value, label in field.choices %}
+                                            <option value="{{ value }}"
+                                                    {% if field.data|string == value|string %}selected{% endif %}
+                                                    {% if '-' in label or '---' in label %}
+                                                    style="font-weight: bold; background-color: #f8f9fa;"
+                                                    {% endif %}>
+                                                {{ label|replace('    ', '&nbsp;&nbsp;&nbsp;&nbsp;')|safe }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                {% else %}
+                                    {{ field(class="form-control" + (" is-invalid" if field.errors else "")) }}
+                                {% endif %}
+
+                                {% if field.errors %}
+                                    {% for error in field.errors %}
+                                        <div class="invalid-feedback d-block">{{ error }}</div>
                                     {% endfor %}
-                                </select>
-                            {% else %}
-                                {{ field(class="form-control") }}
-                            {% endif %}
+                                {% endif %}
+                            </div>
+                        {% endfor %}
 
-                            {% if field.errors %}
-                                {% for error in field.errors %}
-                                    <div class="text-danger small mt-1">{{ error }}</div>
-                                {% endfor %}
-                            {% endif %}
-                        </div>
-                    {% endfor %}
-
-                    <button type="submit" class="btn btn-primary w-100 py-2">
-                        {{ 'Сохранить изменения' if edit else 'Создать отдел' }}
-                    </button>
-                </form>
+                        <button type="submit" class="btn btn-primary w-100 py-2">
+                            {{ 'Сохранить изменения' if edit else 'Создать отдел' }}
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>

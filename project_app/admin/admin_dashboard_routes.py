@@ -1,7 +1,7 @@
 from flask import render_template
 
-from admin_core import admin_required
-from models import Department, Employee
+from .admin_core import admin_required
+from project_app.models import Department, Employee
 
 
 def register_dashboard_routes(admin_bp):

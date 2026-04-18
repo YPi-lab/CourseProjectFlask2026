@@ -7,7 +7,7 @@
                 <span class="section-kicker">Связь</span>
                 <h2 class="fw-bold mb-4">Контакты предприятия</h2>
                 <p class="section-lead mb-4">Для взаимодействия с предприятием используйте приведенные ниже контактные данные.</p>
-                <div class="contact-list">
+                <div class="d-grid gap-3">
                     <div class="contact-item">
                         <strong>Адрес</strong>
                         <div class="muted-copy">123456, г. Москва, ул. Юбилейная, д. 10</div>
@@ -27,10 +27,12 @@
                 </div>
             </div>
             <div class="col-lg-6">
-                <div class="feature-card h-100">
-                    <h4 class="mb-3">Отдел кадров</h4>
-                    <p class="muted-copy">По вопросам трудоустройства рекомендуется использовать раздел «Вакансии» или
-                        обратиться по официальным контактам предприятия.</p>
+                <div class="feature-card h-100 d-flex flex-column justify-content-between">
+                    <div>
+                        <h4 class="mb-3">Отдел кадров</h4>
+                        <p class="muted-copy mb-0">По вопросам трудоустройства рекомендуется использовать раздел «Вакансии» или
+                            обратиться по официальным контактам предприятия.</p>
+                    </div>
                     <div class="mt-4">
                         <a href="{{ url_for('main.vacancies') }}" class="btn btn-primary px-4">Перейти к вакансиям</a>
                     </div>

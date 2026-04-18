@@ -27,12 +27,14 @@
 
 ## Структура проекта
 
-- `app.py` - инициализация приложения, конфигурация, blueprints;
-- `models.py` - ORM-модели базы данных;
-- `auth.py` - регистрация и авторизация;
-- `main.py` - публичные маршруты и вакансии;
-- `admin*.py` - маршруты и логика административного модуля;
-- `forms.py` - формы и валидация;
+- `app.py` - точка входа для запуска;
+- `project_app/__init__.py` - factory (`create_app`) и регистрация blueprints;
+- `project_app/models.py` - ORM-модели базы данных;
+- `project_app/forms.py` - формы и валидация;
+- `project_app/auth/routes.py` - регистрация и авторизация;
+- `project_app/main/routes.py` - публичные маршруты и вакансии;
+- `project_app/admin/*` - маршруты и логика административного модуля;
+- `project_app/utils/db_utils.py` - безопасные коммиты с обработкой ошибок;
 - `templates/` - HTML-шаблоны;
 - `static/` - стили, изображения, JS;
 - `tests/` - автотесты.

@@ -1,34 +1,48 @@
 {% extends "admin/base_admin.html" %}
 
 {% block content %}
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Структура организации</h2>
+    {% set dept_counter = namespace(total=0) %}
+    {% macro accumulate_departments(items, counter) %}
+        {% for item in items %}
+            {% set counter.total = counter.total + 1 %}
+            {{ accumulate_departments(item.sub_departments.all(), counter) }}
+        {% endfor %}
+    {% endmacro %}
+    {{ accumulate_departments(departments, dept_counter) }}
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div class="d-flex flex-wrap align-items-center gap-3">
+            <h2 class="mb-0">Структура организации</h2>
+            <span class="badge rounded-pill border text-secondary-emphasis bg-body-tertiary px-3 py-2">
+                Отделов: {{ dept_counter.total }}
+            </span>
+        </div>
         <a href="{{ url_for('admin.add_department') }}" class="btn btn-primary">Добавить отдел</a>
     </div>
     {% macro render_dept(dept, depth=0) %}
-        <div class="list-group-item border-0 ms-{{ depth * 3 }} pb-0">
-            <div class="d-flex justify-content-between align-items-center py-1 border-bottom">
-            <span>
-                {% set subs = dept.sub_departments.all() %}
-                {% set emps = dept.all_employees %}
-                {% if subs or emps %}
-                    <button class="btn btn-sm p-0 me-2 text-primary shadow-none btn-toggle"
-                            type="button" data-bs-toggle="collapse" data-bs-target="#sub-{{ dept.id }}">
-                        ▶
-                    </button>
-                {% else %}
-                    <span class="me-4"></span>
-                {% endif %}
-                <span class="text-secondary">📁</span>
-                <a href="{{ url_for('admin.department_detail', dept_id=dept.id) }}"
-                   class="text-decoration-none fw-bold text-dark">
-                    {{ dept.name }}
-                </a>
-                <span class="badge bg-light text-muted border ms-2 small">{{ emps|length }}</span>
-            </span>
-                <div class="btn-group">
+        <div class="list-group-item border-0 pb-0 px-0">
+            <div class="dept-row py-1 border-bottom">
+                <div class="dept-main">
+                    {% set subs = dept.sub_departments.all() %}
+                    {% set emps = dept.all_employees %}
+                    {% if subs or emps %}
+                        <button class="btn btn-sm p-0 me-2 text-primary shadow-none btn-toggle"
+                                type="button" data-bs-toggle="collapse" data-bs-target="#sub-{{ dept.id }}">
+                            ▶
+                        </button>
+                    {% else %}
+                        <span class="me-4"></span>
+                    {% endif %}
+                    <span class="text-secondary">📁</span>
+                    <a href="{{ url_for('admin.department_detail', dept_id=dept.id) }}"
+                       class="text-decoration-none fw-bold text-dark dept-name">
+                        {{ dept.name }}
+                    </a>
+                    <span class="badge bg-light text-muted border ms-2 small">{{ emps|length }}</span>
+                </div>
+                <div class="d-flex flex-wrap gap-2">
                     <form action="{{ url_for('admin.delete_department', dept_id=dept.id) }}" method="POST"
-                          style="display:inline;" onsubmit="return confirm('Удалить отдел?');">
+                          class="d-inline" onsubmit="return confirm('Удалить отдел?');">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <button type="submit" class="btn btn-sm btn-outline-danger">Удалить</button>
                     </form>
@@ -42,11 +56,11 @@
                     {% for pos in dept.positions %}
                         {% for emp in pos.employees %}
                             <div class="py-1 d-flex justify-content-between align-items-center border-bottom border-light small">
-                            <span>
-                                <span class="text-info me-2">👤</span>
-                                {{ emp.full_name }}
-                                <span class="text-muted ms-2">— {{ pos.title }}</span>
-                            </span>
+                                <span>
+                                    <span class="text-info me-2">👤</span>
+                                    {{ emp.full_name }}
+                                    <span class="text-muted ms-2">— {{ pos.title }}</span>
+                                </span>
                                 <a href="{{ url_for('admin.edit_employee', emp_id=emp.id, next=request.path) }}"
                                    class="text-primary small text-decoration-none">правка</a>
                             </div>
@@ -56,7 +70,7 @@
             </div>
         </div>
     {% endmacro %}
-    <div class="container-fluid bg-white p-3 shadow-sm rounded">
+    <div class="container-fluid bg-white p-3 shadow-sm rounded-3">
         {% if departments %}
             <div class="list-group">
                 {% for d in departments %}

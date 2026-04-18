@@ -1,7 +1,7 @@
 from flask import current_app, flash
 from sqlalchemy.exc import SQLAlchemyError
 
-from models import db
+from project_app.models import db
 
 
 def commit_with_handling(success_message=None, error_message="Ошибка при сохранении данных.", category="success"):

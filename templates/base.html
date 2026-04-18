@@ -9,7 +9,7 @@
 </head>
 <body>
 <div class="topbar">
-    <div class="container topbar-shell">
+    <div class="container d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-1 gap-lg-3 py-2 py-lg-0">
         <span>Радиозавод «Вектор» • официальный сайт предприятия</span>
         <span>Москва • Пн-Пт 08:00-17:00 • +7 (495) 000-00-00</span>
     </div>
@@ -17,7 +17,7 @@
 <nav class="navbar navbar-expand-lg site-navbar sticky-top mb-4">
     <div class="container">
         <a class="navbar-brand navbar-shell" href="{{ url_for('main.home') }}">
-            <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Логотип предприятия" width="45" height="auto"
+            <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Логотип предприятия" width="45"
                  class="me-2 brand-mark">
             <span class="brand-block">
                 <span class="brand-title">Радиозавод «Вектор»</span>
@@ -43,7 +43,7 @@
                     <a class="nav-link {% if request.endpoint == 'main.services' %}active{% endif %}" href="{{ url_for('main.services') }}">Услуги</a>
                 </li>
                 <li class="nav-item">
-                <a class="nav-link {% if request.endpoint == 'main.vacancies' %}active{% endif %}" href="{{ url_for('main.vacancies') }}">Вакансии</a>
+                    <a class="nav-link {% if request.endpoint == 'main.vacancies' %}active{% endif %}" href="{{ url_for('main.vacancies') }}">Вакансии</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link {% if request.endpoint == 'main.contact' %}active{% endif %}" href="{{ url_for('main.contact') }}">Контакты</a>
@@ -60,12 +60,19 @@
                     </li>
                 {% endif %}
             </ul>
-            <div class="navbar-actions">
+            <div class="d-flex flex-wrap align-items-center gap-2 flex-shrink-0 mt-3 mt-lg-0">
                 {% if current_user.is_authenticated %}
-                    <span class="navbar-text">
-                        <strong class="text-dark">{{ current_user.username }}</strong>
-                    </span>
-                    <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-secondary btn-sm">Выйти</a>
+                    <div class="dropdown">
+                        <button class="btn btn-outline-primary btn-sm dropdown-toggle" type="button"
+                                data-bs-toggle="dropdown" aria-expanded="false">
+                            {{ current_user.username }}
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="{{ url_for('auth.account') }}">Настройки аккаунта</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">Выйти</a></li>
+                        </ul>
+                    </div>
                 {% else %}
                     <a href="{{ url_for('auth.login') }}" class="btn btn-outline-primary btn-sm">Вход</a>
                     <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-sm">Регистрация</a>

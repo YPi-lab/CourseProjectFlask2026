@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %} Настройки аккаунта {% endblock %}
+
+{% block content %}
+    <div class="content-panel">
+        <span class="section-kicker">Личный кабинет</span>
+        <h2 class="fw-bold mb-4">Настройки аккаунта</h2>
+
+        <div class="row g-4">
+            <div class="col-lg-7">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-header bg-white fw-semibold py-3">Изменение пароля</div>
+                    <div class="card-body">
+                        <form method="POST" action="{{ url_for('auth.change_password') }}">
+                            {{ password_form.hidden_tag() }}
+                            <div class="mb-3">
+                                {{ password_form.current_password.label(class="form-label") }}
+                                {{ password_form.current_password(class="form-control" + (" is-invalid" if password_form.current_password.errors else "")) }}
+                                {% for error in password_form.current_password.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            <div class="mb-3">
+                                {{ password_form.new_password.label(class="form-label") }}
+                                {{ password_form.new_password(class="form-control" + (" is-invalid" if password_form.new_password.errors else "")) }}
+                                {% for error in password_form.new_password.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            <div class="mb-3">
+                                {{ password_form.confirm_new_password.label(class="form-label") }}
+                                {{ password_form.confirm_new_password(class="form-control" + (" is-invalid" if password_form.confirm_new_password.errors else "")) }}
+                                {% for error in password_form.confirm_new_password.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            <div class="d-grid d-sm-flex">
+                                {{ password_form.submit(class="btn btn-primary") }}
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-5">
+                <div class="card shadow-sm border-danger h-100">
+                    <div class="card-header bg-danger-subtle text-danger-emphasis fw-semibold py-3">Удаление аккаунта</div>
+                    <div class="card-body">
+                        <p class="text-muted small">
+                            Действие необратимо. После удаления потребуется новая регистрация.
+                        </p>
+                        <form method="POST" action="{{ url_for('auth.delete_account') }}"
+                              onsubmit="return confirm('Удалить аккаунт без возможности восстановления?');">
+                            {{ delete_form.hidden_tag() }}
+                            <div class="mb-3">
+                                {{ delete_form.password.label(class="form-label") }}
+                                {{ delete_form.password(class="form-control" + (" is-invalid" if delete_form.password.errors else "")) }}
+                                {% for error in delete_form.password.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            <div class="d-grid d-sm-flex">
+                                {{ delete_form.submit(class="btn btn-outline-danger") }}
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

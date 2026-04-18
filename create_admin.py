@@ -3,8 +3,8 @@ import getpass
 
 from werkzeug.security import generate_password_hash
 
-from app import app
-from models import User, db
+from project_app import create_app
+from project_app.models import User, db
 
 
 def parse_args():
@@ -32,6 +32,7 @@ def validate_credentials(username, password):
 
 
 def main():
+    app = create_app()
     args = parse_args()
     username = prompt_if_missing(args.username, "Логин администратора: ")
 

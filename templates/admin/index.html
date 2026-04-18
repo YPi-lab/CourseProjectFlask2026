@@ -2,26 +2,23 @@
 
 {% block content %}
     <h2 class="mb-4 text-dark">Общая информация</h2>
-    <div class="row text-center">
-        <div class="col-md-4 mb-3">
-            <div class="card shadow-sm border-0 bg-primary text-white p-3 h-100">
-                <div class="display-4"><i class="fas fa-sitemap"></i></div>
-                <h3 class="fw-bold mt-2">{{ stats.departments_count }}</h3>
-                <p class="mb-0 opacity-75">Всего отделов</p>
+    <div class="row g-3">
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 p-4 h-100 admin-stat-card admin-stat-card--dept">
+                <p class="mb-2 text-uppercase small admin-stat-label">Всего отделов</p>
+                <h3 class="fw-bold mb-0">{{ stats.departments_count }}</h3>
             </div>
         </div>
-        <div class="col-md-4 mb-3">
-            <div class="card shadow-sm border-0 bg-success text-white p-3 h-100">
-                <div class="display-4"><i class="fas fa-users"></i></div>
-                <h3 class="fw-bold mt-2">{{ stats.employee_count }}</h3>
-                <p class="mb-0 opacity-75">Всего сотрудников</p>
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 p-4 h-100 admin-stat-card admin-stat-card--staff">
+                <p class="mb-2 text-uppercase small admin-stat-label">Всего сотрудников</p>
+                <h3 class="fw-bold mb-0">{{ stats.employee_count }}</h3>
             </div>
         </div>
-        <div class="col-md-4 mb-3">
-            <div class="card shadow-sm border-0 bg-info text-white p-3 h-100">
-                <div class="display-4"><i class="fas fa-user-check"></i></div>
-                <h3 class="fw-bold mt-2">{{ stats.active_count }}</h3>
-                <p class="mb-0 opacity-75">Активных в штате</p>
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 p-4 h-100 admin-stat-card admin-stat-card--active">
+                <p class="mb-2 text-uppercase small admin-stat-label">Активных в штате</p>
+                <h3 class="fw-bold mb-0">{{ stats.active_count }}</h3>
             </div>
         </div>
     </div>

@@ -10,13 +10,13 @@
             <h1 class="h3 mb-3">Регистрация пользователя</h1>
             <p class="muted-copy mb-4">После регистрации пользователь сможет работать с внутренними сервисами в рамках назначенных прав доступа.</p>
 
-            <div class="form-floating mb-2">
+            <div class="form-floating mb-3">
                 {{ form.username(class="form-control" + (" is-invalid" if form.username.errors else ""), id="floatingUsername", placeholder="Логин") }}
                 <label for="floatingUsername">{{ form.username.label }}</label>
                 {% for error in form.username.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
             </div>
 
-            <div class="form-floating mb-2">
+            <div class="form-floating mb-3">
                 {{ form.password(class="form-control" + (" is-invalid" if form.password.errors else ""), id="floatingPassword", placeholder="Пароль") }}
                 <label for="floatingPassword">{{ form.password.label }}</label>
                 {% for error in form.password.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
