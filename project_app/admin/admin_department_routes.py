@@ -2,6 +2,7 @@ from flask import flash, redirect, render_template, request, url_for
 
 from .admin_core import admin_required
 from project_app.utils.db_utils import commit_with_handling
+from project_app.utils.request_utils import get_next_url
 from project_app.forms import DepartmentForm
 from project_app.models import ActiveVacancy, Department, Employee, Position, db
 
@@ -57,7 +58,7 @@ def register_department_routes(admin_bp):
     def add_department():
         form = DepartmentForm()
         form.parent_id.choices = get_department_tree()
-        next_url = request.args.get("next") or request.form.get("next") or url_for("admin.departments")
+        next_url = get_next_url("admin.departments")
         if form.validate_on_submit():
             duplicate = Department.query.filter_by(name=form.name.data).first()
             if duplicate:
@@ -76,7 +77,7 @@ def register_department_routes(admin_bp):
         form = DepartmentForm(obj=dept)
         descendant_ids = get_descendant_ids(dept)
         form.parent_id.choices = get_department_tree(exclude_id=dept_id, excluded_ids=descendant_ids)
-        next_url = request.args.get("next") or request.form.get("next") or url_for("admin.departments")
+        next_url = get_next_url("admin.departments")
 
         if form.validate_on_submit():
             duplicate = Department.query.filter(

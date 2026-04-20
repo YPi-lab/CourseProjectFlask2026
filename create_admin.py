@@ -6,6 +6,8 @@ from werkzeug.security import generate_password_hash
 from project_app import create_app
 from project_app.models import User, db
 
+PASSWORD_HASH_METHOD = "pbkdf2"
+
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Создание администратора для проекта кадрового учета на Flask.")
@@ -22,9 +24,13 @@ def prompt_if_missing(value, prompt_text, secret=False):
     return input(prompt_text).strip()
 
 
-def validate_credentials(username, password):
+def validate_username(username):
     if len(username) < 4 or len(username) > 20:
         raise ValueError("Логин должен содержать от 4 до 20 символов.")
+
+
+def validate_credentials(username, password):
+    validate_username(username)
     if len(password) < 8 or len(password) > 20:
         raise ValueError("Пароль должен содержать от 8 до 20 символов.")
     if not any(ch.isalpha() for ch in password) or not any(ch.isdigit() for ch in password):
@@ -35,9 +41,7 @@ def main():
     app = create_app()
     args = parse_args()
     username = prompt_if_missing(args.username, "Логин администратора: ")
-
-    if len(username) < 4 or len(username) > 20:
-        raise ValueError("Логин должен содержать от 4 до 20 символов.")
+    validate_username(username)
 
     with app.app_context():
         existing_user = User.query.filter_by(username=username).first()
@@ -55,7 +59,7 @@ def main():
 
         admin = User(
             username=username,
-            password=generate_password_hash(password, method="pbkdf2"),
+            password=generate_password_hash(password, method=PASSWORD_HASH_METHOD),
             is_admin=True,
         )
         db.session.add(admin)

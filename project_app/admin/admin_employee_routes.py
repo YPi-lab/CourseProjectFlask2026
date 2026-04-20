@@ -3,12 +3,44 @@ from sqlalchemy import func, or_
 
 from .admin_core import admin_required
 from project_app.utils.db_utils import commit_with_handling
+from project_app.utils.request_utils import get_next_url
 from project_app.forms import EmployeeForm
 from project_app.models import Department, Employee, Position, db
 
 
 def get_position_choices():
     return [(p.id, f"{p.title} ({p.department.name})") for p in Position.query.all()]
+
+
+def _render_employee_form(form, edit=False):
+    return render_template("admin/add_employee.html", form=form, edit=edit)
+
+
+def _is_unique_employee_contact(form, employee_id=None):
+    email_exists = Employee.query.filter(Employee.email == form.email.data, Employee.id != employee_id).first()
+    if email_exists:
+        message = "занят!" if employee_id else "уже используется!"
+        flash(f"Ошибка: Почта {form.email.data} {message}", "danger")
+        return False
+
+    phone_exists = Employee.query.filter(Employee.phone == form.phone.data, Employee.id != employee_id).first()
+    if phone_exists:
+        message = "занят!" if employee_id else "уже зарегистрирован!"
+        flash(f"Ошибка: Телефон {form.phone.data} {message}", "danger")
+        return False
+
+    return True
+
+
+def _apply_employee_form(employee, form):
+    employee.last_name = form.last_name.data
+    employee.first_name = form.first_name.data
+    employee.middle_name = form.middle_name.data
+    employee.email = form.email.data
+    employee.phone = form.phone.data
+    employee.hire_date = form.hire_date.data
+    employee.position_id = form.position_id.data
+    employee.is_active = form.is_active.data
 
 
 def register_employee_routes(admin_bp):
@@ -61,30 +93,17 @@ def register_employee_routes(admin_bp):
     def add_employee():
         form = EmployeeForm()
         form.position_id.choices = get_position_choices()
-        next_url = request.args.get("next") or request.form.get("next") or url_for("admin.employees")
+        next_url = get_next_url("admin.employees")
         if form.validate_on_submit():
-            if Employee.query.filter_by(email=form.email.data).first():
-                flash(f"Ошибка: Почта {form.email.data} уже используется!", "danger")
-                return render_template("admin/add_employee.html", form=form)
-            if Employee.query.filter_by(phone=form.phone.data).first():
-                flash(f"Ошибка: Телефон {form.phone.data} уже зарегистрирован!", "danger")
-                return render_template("admin/add_employee.html", form=form)
+            if not _is_unique_employee_contact(form):
+                return _render_employee_form(form)
 
-            db.session.add(
-                Employee(
-                    last_name=form.last_name.data,
-                    first_name=form.first_name.data,
-                    middle_name=form.middle_name.data,
-                    email=form.email.data,
-                    phone=form.phone.data,
-                    hire_date=form.hire_date.data,
-                    position_id=form.position_id.data,
-                    is_active=form.is_active.data,
-                )
-            )
+            employee = Employee()
+            _apply_employee_form(employee, form)
+            db.session.add(employee)
             if commit_with_handling("Сотрудник добавлен", "Не удалось сохранить данные сотрудника."):
                 return redirect(next_url)
-        return render_template("admin/add_employee.html", form=form)
+        return _render_employee_form(form)
 
     @admin_bp.route("/employee/edit/<int:emp_id>", methods=["GET", "POST"])
     @admin_required
@@ -92,26 +111,15 @@ def register_employee_routes(admin_bp):
         emp = db.get_or_404(Employee, emp_id)
         form = EmployeeForm(obj=emp)
         form.position_id.choices = get_position_choices()
-        next_url = request.args.get("next") or request.form.get("next") or url_for("admin.employees")
+        next_url = get_next_url("admin.employees")
         if form.validate_on_submit():
-            if Employee.query.filter(Employee.email == form.email.data, Employee.id != emp_id).first():
-                flash(f"Ошибка: Email {form.email.data} уже занят!", "danger")
-                return render_template("admin/add_employee.html", form=form, edit=True)
-            if Employee.query.filter(Employee.phone == form.phone.data, Employee.id != emp_id).first():
-                flash(f"Ошибка: Телефон {form.phone.data} уже занят!", "danger")
-                return render_template("admin/add_employee.html", form=form, edit=True)
+            if not _is_unique_employee_contact(form, employee_id=emp_id):
+                return _render_employee_form(form, edit=True)
 
-            emp.last_name = form.last_name.data
-            emp.first_name = form.first_name.data
-            emp.middle_name = form.middle_name.data
-            emp.email = form.email.data
-            emp.phone = form.phone.data
-            emp.hire_date = form.hire_date.data
-            emp.position_id = form.position_id.data
-            emp.is_active = form.is_active.data
+            _apply_employee_form(emp, form)
             if commit_with_handling("Данные сотрудника обновлены", "Ошибка при сохранении изменений сотрудника."):
                 return redirect(next_url)
-        return render_template("admin/add_employee.html", form=form, edit=True)
+        return _render_employee_form(form, edit=True)
 
     @admin_bp.route("/employee/delete/<int:emp_id>", methods=["POST"])
     @admin_required
@@ -119,7 +127,7 @@ def register_employee_routes(admin_bp):
         emp = db.get_or_404(Employee, emp_id)
         name = emp.full_name
         db.session.delete(emp)
-        next_url = request.args.get("next") or request.form.get("next") or url_for("admin.employees")
+        next_url = get_next_url("admin.employees")
         if commit_with_handling(f"Сотрудник {name} удален из базы", "Не удалось удалить сотрудника."):
             return redirect(next_url)
         return redirect(next_url)

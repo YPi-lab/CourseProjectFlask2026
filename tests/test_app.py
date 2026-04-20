@@ -545,7 +545,7 @@ class FlaskProjectTestCase(unittest.TestCase):
             follow_redirects=True,
         )
         self.assertEqual(response.status_code, 200)
-        self.assertIn("invalid email address", response.get_data(as_text=True).lower())
+        self.assertIn("введите корректный email-адрес", response.get_data(as_text=True).lower())
 
         with self.app.app_context():
             self.assertIsNone(Employee.query.filter_by(phone="+79990000121").first())
@@ -567,7 +567,7 @@ class FlaskProjectTestCase(unittest.TestCase):
             follow_redirects=True,
         )
         self.assertEqual(response.status_code, 200)
-        self.assertIn("not a valid choice", response.get_data(as_text=True).lower())
+        self.assertIn("выберите корректное значение из списка", response.get_data(as_text=True).lower())
 
         with self.app.app_context():
             self.assertIsNone(Employee.query.filter_by(email="invalid-position@example.com").first())

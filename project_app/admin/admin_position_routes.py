@@ -4,6 +4,7 @@ from sqlalchemy import func, or_
 from .admin_core import admin_required
 from .admin_department_routes import get_department_tree
 from project_app.utils.db_utils import commit_with_handling
+from project_app.utils.request_utils import get_next_url
 from project_app.forms import PositionForm
 from project_app.models import ActiveVacancy, Department, Employee, Position, db
 
@@ -58,7 +59,7 @@ def register_position_routes(admin_bp):
     def add_position():
         form = PositionForm()
         form.department_id.choices = get_department_choices()
-        next_url = request.args.get("next") or request.form.get("next") or url_for("admin.positions")
+        next_url = get_next_url("admin.positions")
 
         if form.validate_on_submit():
             existing_pos = Position.query.filter_by(
@@ -85,7 +86,7 @@ def register_position_routes(admin_bp):
         pos = db.get_or_404(Position, pos_id)
         form = PositionForm(obj=pos)
         form.department_id.choices = get_department_choices()
-        next_url = request.args.get("next") or request.form.get("next") or url_for("admin.positions")
+        next_url = get_next_url("admin.positions")
 
         if form.validate_on_submit():
             duplicate = Position.query.filter(
@@ -120,7 +121,7 @@ def register_position_routes(admin_bp):
         for vacancy in active_vacancies:
             db.session.delete(vacancy)
 
-        next_url = request.args.get("next") or request.form.get("next") or url_for("admin.positions")
+        next_url = get_next_url("admin.positions")
         pos_title = pos.title
         db.session.delete(pos)
         if commit_with_handling(

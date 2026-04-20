@@ -7,6 +7,11 @@ from project_app.forms import ChangePasswordForm, DeleteAccountForm, RegisterFor
 from project_app.models import db, User
 
 auth = Blueprint('auth', __name__)
+PASSWORD_HASH_METHOD = "pbkdf2"
+
+
+def get_account_forms():
+    return ChangePasswordForm(), DeleteAccountForm()
 
 
 @auth.route('/register', methods=['GET', 'POST'])
@@ -17,7 +22,7 @@ def register():
         if existing_user:
             flash('Ошибка: Пользователь с таким логином уже существует!', 'danger')
             return render_template('registration.html', form=form)
-        hashed_password = generate_password_hash(form.password.data, method='pbkdf2')
+        hashed_password = generate_password_hash(form.password.data, method=PASSWORD_HASH_METHOD)
         new_user = User(username=form.username.data, password=hashed_password)
         db.session.add(new_user)
         if commit_with_handling(
@@ -52,16 +57,14 @@ def logout():
 @auth.route('/account', methods=['GET'])
 @login_required
 def account():
-    password_form = ChangePasswordForm()
-    delete_form = DeleteAccountForm()
+    password_form, delete_form = get_account_forms()
     return render_template('account.html', password_form=password_form, delete_form=delete_form)
 
 
 @auth.route('/account/password', methods=['POST'])
 @login_required
 def change_password():
-    password_form = ChangePasswordForm()
-    delete_form = DeleteAccountForm()
+    password_form, delete_form = get_account_forms()
     if not password_form.validate_on_submit():
         return render_template('account.html', password_form=password_form, delete_form=delete_form)
 
@@ -74,9 +77,8 @@ def change_password():
         flash("Новый пароль должен отличаться от текущего.", "warning")
         return redirect(url_for('auth.account'))
 
-    user.password = generate_password_hash(password_form.new_password.data, method='pbkdf2')
-    if commit_with_handling("Пароль успешно изменен.", "Не удалось изменить пароль."):
-        return redirect(url_for('auth.account'))
+    user.password = generate_password_hash(password_form.new_password.data, method=PASSWORD_HASH_METHOD)
+    commit_with_handling("Пароль успешно изменен.", "Не удалось изменить пароль.")
     return redirect(url_for('auth.account'))
 
 
@@ -85,7 +87,7 @@ def change_password():
 def delete_account():
     delete_form = DeleteAccountForm()
     if not delete_form.validate_on_submit():
-        password_form = ChangePasswordForm()
+        password_form, _ = get_account_forms()
         return render_template('account.html', password_form=password_form, delete_form=delete_form)
 
     user = current_user._get_current_object()
