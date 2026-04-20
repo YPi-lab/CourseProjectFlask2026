@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %} Главное меню {% endblock %}
+{% block content %}
+    <section class="hero-panel mb-5">
+        <div class="row g-0 align-items-stretch">
+            <div class="col-lg-7">
+                <div class="hero-copy">
+                    <span class="hero-kicker">Радиозавод Вектор</span>
+                    <h1 class="hero-title">Производство радиоэлектронной продукции полного цикла.</h1>
+                    <p class="hero-text">На сайте размещены сведения о предприятии, производственных направлениях,
+                        оказываемых услугах и открытых вакансиях.</p>
+                    <div class="d-flex flex-wrap gap-3 mt-4">
+                        <a href="{{ url_for('main.products') }}" class="btn btn-primary px-4 py-2">Продукция</a>
+                        <a href="{{ url_for('main.vacancies') }}" class="btn btn-outline-primary px-4 py-2">Вакансии</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-5">
+                <div class="hero-side d-flex flex-column justify-content-between">
+                    <div class="hero-badge">Сайт предприятия</div>
+                    <div>
+                        <h3 class="mb-3">Производство, услуги и вакансии</h3>
+                        <p class="mb-0 opacity-75">Публичные разделы сайта содержат основные сведения о деятельности
+                            предприятия, выпускаемой продукции и доступных вакансиях.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="mb-4">
+        <div class="d-flex justify-content-between align-items-end flex-wrap gap-3 mb-4">
+            <div>
+                <span class="section-kicker">Разделы сайта</span>
+                <h2 class="mb-0">Что доступно на сайте</h2>
+            </div>
+            <p class="section-lead mb-0">Публичная часть сайта отражает основные направления деятельности предприятия.</p>
+        </div>
+        <div class="info-grid">
+            <div class="feature-card h-100">
+                <div class="feature-index">01</div>
+                <h5>О предприятии</h5>
+                <p class="muted-copy mb-0">Общие сведения о заводе, профиле деятельности и производственном цикле.</p>
+            </div>
+            <div class="feature-card h-100">
+                <div class="feature-index">02</div>
+                <h5>Продукция и услуги</h5>
+                <p class="muted-copy mb-0">Основные направления выпускаемой продукции и производственные компетенции.</p>
+            </div>
+            <div class="feature-card h-100">
+                <div class="feature-index">03</div>
+                <h5>Вакансии</h5>
+                <p class="muted-copy mb-0">Актуальные вакансии предприятия доступны авторизованным пользователям сайта.</p>
+            </div>
+        </div>
+    </section>
+{% endblock %}

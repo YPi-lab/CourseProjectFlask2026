@@ -1,45 +1,92 @@
 {% extends "admin/base_admin.html" %}
 
 {% block content %}
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Штатные должности</h2>
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div class="d-flex flex-wrap align-items-center gap-3">
+            <h2 class="mb-0">Штатные должности</h2>
+            <span class="badge rounded-pill border text-secondary-emphasis bg-body-tertiary px-3 py-2">
+                Должностей: {{ positions|length }}
+            </span>
+        </div>
         <a href="{{ url_for('admin.add_position') }}" class="btn btn-primary">Создать должность</a>
     </div>
-
-    <div class="card shadow-sm">
-        <table class="table align-middle mb-0">
-            <thead class="table-light">
-            <tr>
-                <th>Название</th>
-                <th>Отдел</th>
-                <th class="text-center">Сотрудников</th>
-                <th class="text-end">Действия</th>
-            </tr>
-            </thead>
-            <tbody>
-            {% for pos in positions %}
+    <div class="card shadow-sm border-0 mb-3">
+        <div class="card-body py-3">
+            <form method="get" class="row g-2 align-items-end">
+                <div class="col-md-4">
+                    <label for="q" class="form-label mb-1">Поиск должности</label>
+                    <input type="text" class="form-control" id="q" name="q" value="{{ q or '' }}"
+                           placeholder="Название должности">
+                </div>
+                <div class="col-md-3">
+                    <label for="sort" class="form-label mb-1">Сортировка</label>
+                    <select class="form-select" id="sort" name="sort">
+                        <option value="title" {% if sort == 'title' %}selected{% endif %}>По названию должности</option>
+                        <option value="department" {% if sort == 'department' %}selected{% endif %}>По отделу</option>
+                        <option value="employees" {% if sort == 'employees' %}selected{% endif %}>По числу сотрудников</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label for="direction" class="form-label mb-1">Порядок</label>
+                    <select class="form-select" id="direction" name="direction">
+                        <option value="asc" {% if direction == 'asc' %}selected{% endif %}>По возрастанию</option>
+                        <option value="desc" {% if direction == 'desc' %}selected{% endif %}>По убыванию</option>
+                    </select>
+                </div>
+                <div class="col-md-auto">
+                    <button type="submit" class="btn btn-outline-primary w-100">Применить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="card shadow-sm border-0">
+        <div class="table-responsive">
+            <table class="table table-sm table-hover align-middle mb-0 admin-list-table">
+                <colgroup>
+                    <col style="width: 37%">
+                    <col style="width: 27%">
+                    <col style="width: 12%">
+                    <col style="width: 24%">
+                </colgroup>
+                <thead class="table-light">
                 <tr>
-                    <td class="fw-bold">{{ pos.title }}</td>
-                    <td>📁 {{ pos.department.name }}</td>
-                    <td class="text-center"><span class="badge bg-secondary">{{ pos.employees.count() }}</span></td>
-                    <td class="text-end">
-                        <div class="btn-group">
-                            <a href="{{ url_for('admin.edit_position', pos_id=pos.id) }}"
-                               class="btn btn-sm btn-outline-primary">
-                                Редактировать
-                            </a>
-                            <form action="{{ url_for('admin.delete_position', pos_id=pos.id) }}" method="POST"
-                                  class="d-inline" onsubmit="return confirm('Удалить должность?');">
-                                <button type="submit" class="btn btn-sm btn-outline-danger">
-                                    Удалить
-                                </button>
-                            </form>
-                        </div>
-                    </td>
+                    <th class="text-start">Должность</th>
+                    <th class="text-start">Отдел</th>
+                    <th class="text-start text-nowrap">Штат</th>
+                    <th class="text-start">Действия</th>
                 </tr>
-            {% endfor %}
-
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                {% for pos in positions %}
+                    <tr>
+                        <td class="fw-semibold text-break">{{ pos.title }}</td>
+                        <td class="text-break">{{ pos.department.name }}</td>
+                        <td class="text-start text-nowrap"><span class="badge bg-secondary">{{ pos.employees.count() }}</span></td>
+                        <td>
+                            <div class="d-flex flex-wrap align-items-center gap-1">
+                                <a href="{{ url_for('admin.edit_position', pos_id=pos.id) }}"
+                                   class="btn btn-sm btn-outline-primary">
+                                    Изменить
+                                </a>
+                                <form action="{{ url_for('admin.delete_position', pos_id=pos.id) }}" method="POST"
+                                      class="d-inline" onsubmit="return confirm('Удалить должность?');">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <input type="hidden" name="next"
+                                           value="{{ url_for('admin.positions', sort=sort, direction=direction, q=q) }}">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        Удалить
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="4" class="text-center py-5 text-muted">Должности не найдены</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 {% endblock %}

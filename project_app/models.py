@@ -1,0 +1,80 @@
+from datetime import date
+
+from flask_login import UserMixin
+from flask_sqlalchemy import SQLAlchemy
+
+db = SQLAlchemy()
+
+
+class User(db.Model, UserMixin):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(150), unique=True, nullable=False)
+    password = db.Column(db.String(255), nullable=False)
+    is_admin = db.Column(db.Boolean, default=False)
+    has_completed_survey = db.Column(db.Boolean, default=False)
+
+
+class Department(db.Model):
+    __tablename__ = 'department'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(150), nullable=False, unique=True)
+    parent_id = db.Column(db.Integer, db.ForeignKey('department.id'), nullable=True)
+    sub_departments = db.relationship(
+        'Department',
+        backref=db.backref('parent', remote_side=[id]),
+        cascade="all, delete-orphan",
+        lazy='dynamic'
+    )
+    positions = db.relationship('Position', backref='department', cascade="all,delete-orphan", lazy='select')
+
+    def __repr__(self):
+        return f'<Department {self.name}>'
+
+    @property
+    def all_employees(self):
+        employees_list = []
+        for pos in self.positions:
+            active_emps = pos.employees.filter_by(is_active=True).all()
+            employees_list.extend(active_emps)
+        for child in self.sub_departments.all():
+            employees_list.extend(child.all_employees)
+        return employees_list
+
+
+class Position(db.Model):
+    __tablename__ = 'position'
+    __table_args__ = (db.UniqueConstraint('title', 'department_id', name='uq_position_title_department'),)
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(150), nullable=False)
+    department_id = db.Column(db.Integer, db.ForeignKey('department.id'), nullable=False)
+    employees = db.relationship('Employee', backref='position', lazy='dynamic')
+
+    def __repr__(self):
+        return f'<Position {self.title}>'
+
+
+class Employee(db.Model):
+    __tablename__ = 'employee'
+    id = db.Column(db.Integer, primary_key=True)
+    last_name = db.Column(db.String(150), nullable=False)
+    first_name = db.Column(db.String(150), nullable=False)
+    middle_name = db.Column(db.String(150))
+    email = db.Column(db.String(255), unique=True, nullable=False)
+    phone = db.Column(db.String(150), unique=True, nullable=False)
+    hire_date = db.Column(db.Date, default=date.today)
+    is_active = db.Column(db.Boolean, default=True)
+    position_id = db.Column(db.Integer, db.ForeignKey('position.id'), nullable=True)
+
+    @property
+    def full_name(self):
+        return f"{self.last_name} {self.first_name} {self.middle_name or ''}".strip()
+
+    def __repr__(self):
+        return f'<Employee {self.last_name}>'
+
+
+class ActiveVacancy(db.Model):
+    __tablename__ = 'active_vacancy'
+    id = db.Column(db.Integer, primary_key=True)
+    position_id = db.Column(db.Integer, db.ForeignKey('position.id'), nullable=False, unique=True)
+    position = db.relationship('Position', backref='active_info')

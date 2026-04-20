@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %} О компании {% endblock %}
+{% block content %}
+    <div class="content-panel">
+        <div class="row align-items-center g-4">
+            <div class="col-lg-8">
+                <span class="section-kicker">Профиль предприятия</span>
+                <h2 class="fw-bold mb-4">О компании</h2>
+                <p class="section-lead"><strong>Радиозавод "Вектор"</strong> осуществляет деятельность в области радиоэлектроники и выпускает
+                    продукцию для профессиональной связи, измерительных и вспомогательных систем.</p>
+                <p class="mb-0">Предприятие обеспечивает полный производственный цикл: проектирование, сборку, испытания и
+                    техническое сопровождение изделий.</p>
+                <div class="info-grid mt-4">
+                    <div class="contact-item">
+                        <strong>Направление деятельности</strong>
+                        <div class="muted-copy">Радиоэлектроника, связь, измерительные системы</div>
+                    </div>
+                    <div class="contact-item">
+                        <strong>Производственный цикл</strong>
+                        <div class="muted-copy">Проектирование, сборка, испытания, техническое сопровождение</div>
+                    </div>
+                    <div class="contact-item">
+                        <strong>Фокус качества</strong>
+                        <div class="muted-copy">Стабильность, надежность и технологичность продукции</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 text-center">
+                <img src="{{ url_for('static', filename='images/logo_about.png') }}" alt="Логотип предприятия" width="270"
+                     class="img-fluid">
+            </div>
+        </div>
+    </div>
+{% endblock %}
