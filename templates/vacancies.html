@@ -15,14 +15,18 @@
                     <input type="hidden" name="action" value="add">
                     <div class="col-12">
                         <select name="position_id" class="form-select form-select-sm" required>
-                            <option value="" disabled selected>Добавить должность...</option>
+                            <option value="" disabled selected>
+                                {% if all_positions %}Добавить должность...{% else %}Нет доступных должностей{% endif %}
+                            </option>
                             {% for p in all_positions %}
                                 <option value="{{ p.id }}">{{ p.title }}</option>
                             {% endfor %}
                         </select>
                     </div>
                     <div class="col-12">
-                        <button type="submit" class="btn btn-success btn-sm w-100">Опубликовать</button>
+                        <button type="submit" class="btn btn-success btn-sm w-100" {% if not all_positions %}disabled{% endif %}>
+                            Опубликовать
+                        </button>
                     </div>
                 </form>
             {% endif %}

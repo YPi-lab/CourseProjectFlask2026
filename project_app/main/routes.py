@@ -81,5 +81,11 @@ def vacancies():
         return redirect(url_for('main.vacancies'))
 
     published = ActiveVacancy.query.all()
-    all_positions = Position.query.all()
-    return render_template('vacancies.html', published=published, all_positions=all_positions)
+    published_position_ids = db.session.query(ActiveVacancy.position_id)
+    available_positions = (
+        Position.query
+        .filter(~Position.id.in_(published_position_ids))
+        .order_by(Position.title.asc())
+        .all()
+    )
+    return render_template('vacancies.html', published=published, all_positions=available_positions)

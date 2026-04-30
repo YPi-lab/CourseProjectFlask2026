@@ -3,6 +3,7 @@ from flask_login import current_user, login_user, logout_user, login_required
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from project_app.utils.db_utils import commit_with_handling
+from project_app.utils.request_utils import get_next_url
 from project_app.forms import ChangePasswordForm, DeleteAccountForm, RegisterForm, LoginForm
 from project_app.models import db, User
 
@@ -40,7 +41,7 @@ def login():
         user = User.query.filter_by(username=form.username.data).first()
         if user and check_password_hash(user.password, form.password.data):
             login_user(user, remember=form.remember.data)
-            return redirect(url_for('main.home'))
+            return redirect(get_next_url("main.home"))
 
         flash('Неверный логин или пароль', 'danger')
     return render_template('login.html', form=form)

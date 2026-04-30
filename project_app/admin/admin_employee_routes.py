@@ -119,6 +119,18 @@ def register_employee_routes(admin_bp):
         form = EmployeeForm()
         form.position_id.choices = get_position_choices()
         next_url = get_next_url("admin.employees")
+        dept_id = request.args.get("dept_id", type=int)
+
+        if request.method == "GET" and dept_id and form.position_id.choices:
+            default_position = (
+                Position.query
+                .filter_by(department_id=dept_id)
+                .order_by(Position.title.asc())
+                .first()
+            )
+            if default_position and any(choice_id == default_position.id for choice_id, _ in form.position_id.choices):
+                form.position_id.data = default_position.id
+
         if form.validate_on_submit():
             if not _is_unique_employee_contact(form):
                 return _render_employee_form(form)

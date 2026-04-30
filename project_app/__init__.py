@@ -55,12 +55,6 @@ def create_app(test_config=None):
     def not_found(error):
         return render_template("errors/404.html"), 404
 
-    @app.errorhandler(500)
-    def internal_error(error):
-        db.session.rollback()
-        app.logger.exception("Внутренняя ошибка приложения: %s", error)
-        return render_template("errors/500.html"), 500
-
     return app
 
 

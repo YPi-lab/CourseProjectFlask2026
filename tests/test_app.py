@@ -65,6 +65,24 @@ class FlaskProjectTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertIn("/auth/login", response.location)
 
+    def test_login_redirects_to_safe_next_url(self):
+        response = self.client.post(
+            "/auth/login?next=/vacancies",
+            data={"username": "simple_user", "password": "User12345"},
+            follow_redirects=False,
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(response.location.endswith("/vacancies"))
+
+    def test_login_ignores_external_next_url(self):
+        response = self.client.post(
+            "/auth/login?next=https://evil.example/phish",
+            data={"username": "simple_user", "password": "User12345"},
+            follow_redirects=False,
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(response.location.endswith("/"))
+
     def test_error_pages_are_available(self):
         response_404 = self.client.get("/missing-page")
         self.assertEqual(response_404.status_code, 404)
@@ -222,6 +240,63 @@ class FlaskProjectTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn("Backend Developer".encode("utf-8"), response.data)
         self.assertNotIn("System Analyst".encode("utf-8"), response.data)
+
+    def test_positions_filter_form_preserves_per_page(self):
+        self.login("admin_user", "Admin123")
+        response = self.client.get("/admin/positions?per_page=35")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b'name="per_page" value="35"', response.data)
+        self.assertIn(b'name="page" value="1"', response.data)
+
+    def test_employees_filter_form_preserves_per_page(self):
+        self.login("admin_user", "Admin123")
+        response = self.client.get("/admin/employees?per_page=35")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b'name="per_page" value="35"', response.data)
+        self.assertIn(b'name="page" value="1"', response.data)
+
+    def test_positions_filter_form_preserves_current_page(self):
+        with self.app.app_context():
+            department = Department(name="Разработка")
+            db.session.add(department)
+            db.session.flush()
+            for idx in range(1, 12):
+                db.session.add(Position(title=f"Должность {idx:02d}", department_id=department.id))
+            db.session.commit()
+
+        self.login("admin_user", "Admin123")
+        response = self.client.get("/admin/positions?page=2&per_page=10")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b'name="page" value="2"', response.data)
+
+    def test_employees_filter_form_preserves_current_page(self):
+        with self.app.app_context():
+            department = Department(name="Разработка")
+            db.session.add(department)
+            db.session.flush()
+
+            position = Position(title="Backend Developer", department_id=department.id)
+            db.session.add(position)
+            db.session.flush()
+
+            for idx in range(1, 12):
+                db.session.add(
+                    Employee(
+                        last_name=f"Сотрудник{idx:02d}",
+                        first_name="Тест",
+                        middle_name=None,
+                        email=f"employee-filter-page-{idx}@example.com",
+                        phone=f"+79991111{idx:03d}",
+                        position_id=position.id,
+                        is_active=True,
+                    )
+                )
+            db.session.commit()
+
+        self.login("admin_user", "Admin123")
+        response = self.client.get("/admin/employees?page=2&per_page=10")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b'name="page" value="2"', response.data)
 
     def test_duplicate_position_in_same_department_is_not_created(self):
         with self.app.app_context():
@@ -601,6 +676,29 @@ class FlaskProjectTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertTrue(response.location.endswith("/admin/departments"))
 
+    def test_add_employee_prefills_position_from_department_query_param(self):
+        with self.app.app_context():
+            department = Department(name="Разработка")
+            db.session.add(department)
+            db.session.flush()
+
+            other_department = Department(name="Аналитика")
+            db.session.add(other_department)
+            db.session.flush()
+
+            first_position = Position(title="Backend Developer", department_id=department.id)
+            second_position = Position(title="System Analyst", department_id=other_department.id)
+            db.session.add_all([first_position, second_position])
+            db.session.commit()
+            department_id = department.id
+            first_position_id = first_position.id
+
+        self.login("admin_user", "Admin123")
+        response = self.client.get(f"/admin/employee/add?dept_id={department_id}")
+        self.assertEqual(response.status_code, 200)
+        page_text = response.get_data(as_text=True)
+        self.assertIn(f'selected value="{first_position_id}"', page_text)
+
     def test_edit_missing_employee_returns_404(self):
         self.login("admin_user", "Admin123")
         response = self.client.get("/admin/employee/edit/999999")
@@ -800,6 +898,29 @@ class FlaskProjectTestCase(unittest.TestCase):
         self.assertIn("Backend Developer", page_text)
         self.assertIn("QA Engineer", page_text)
         self.assertIn("Разработка", page_text)
+
+    def test_vacancies_publish_form_shows_only_unpublished_positions(self):
+        with self.app.app_context():
+            department = Department(name="Разработка")
+            db.session.add(department)
+            db.session.flush()
+
+            published_position = Position(title="Backend Developer", department_id=department.id)
+            available_position = Position(title="QA Engineer", department_id=department.id)
+            db.session.add_all([published_position, available_position])
+            db.session.flush()
+            published_position_id = published_position.id
+            available_position_id = available_position.id
+
+            db.session.add(ActiveVacancy(position_id=published_position.id))
+            db.session.commit()
+
+        self.login("admin_user", "Admin123")
+        response = self.client.get("/vacancies")
+        self.assertEqual(response.status_code, 200)
+        page_text = response.get_data(as_text=True)
+        self.assertIn('<option value="%d">' % available_position_id, page_text)
+        self.assertNotIn('<option value="%d">' % published_position_id, page_text)
 
     def test_vacancy_publication_rejects_invalid_position(self):
         self.login("admin_user", "Admin123")

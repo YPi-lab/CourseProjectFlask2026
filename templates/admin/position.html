@@ -13,6 +13,8 @@
     <div class="card shadow-sm border-0 mb-3">
         <div class="card-body py-3">
             <form method="get" class="row g-2 align-items-end">
+                <input type="hidden" name="page" value="{{ page }}">
+                <input type="hidden" name="per_page" value="{{ per_page }}">
                 <div class="col-md-4">
                     <label for="q" class="form-label mb-1">Поиск должности</label>
                     <input type="text" class="form-control" id="q" name="q" value="{{ q or '' }}"
