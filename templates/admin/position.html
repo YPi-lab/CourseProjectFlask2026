@@ -5,7 +5,7 @@
         <div class="d-flex flex-wrap align-items-center gap-3">
             <h2 class="mb-0">Штатные должности</h2>
             <span class="badge rounded-pill border text-secondary-emphasis bg-body-tertiary px-3 py-2">
-                Должностей: {{ positions|length }}
+                Должностей: {{ total_positions }}
             </span>
         </div>
         <a href="{{ url_for('admin.add_position') }}" class="btn btn-primary">Создать должность</a>
@@ -72,7 +72,7 @@
                                       class="d-inline" onsubmit="return confirm('Удалить должность?');">
                                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <input type="hidden" name="next"
-                                           value="{{ url_for('admin.positions', sort=sort, direction=direction, q=q) }}">
+                                           value="{{ url_for('admin.positions', sort=sort, direction=direction, q=q, page=page, per_page=per_page) }}">
                                     <button type="submit" class="btn btn-sm btn-outline-danger">
                                         Удалить
                                     </button>
@@ -89,4 +89,36 @@
             </table>
         </div>
     </div>
+    {% if total_positions > 0 %}
+        <div class="d-flex justify-content-end align-items-center gap-2 mt-3">
+            <form method="get" class="d-flex align-items-center mb-0">
+                <input type="hidden" name="q" value="{{ q or '' }}">
+                <input type="hidden" name="sort" value="{{ sort }}">
+                <input type="hidden" name="direction" value="{{ direction }}">
+                <div class="input-group input-group-sm w-auto">
+                    <span class="input-group-text">На странице</span>
+                    <select id="per_page_positions" name="per_page" class="form-select" onchange="this.form.submit()">
+                        <option value="5" {% if per_page == 5 %}selected{% endif %}>5</option>
+                        <option value="10" {% if per_page == 10 %}selected{% endif %}>10</option>
+                        <option value="15" {% if per_page == 15 %}selected{% endif %}>15</option>
+                        <option value="30" {% if per_page == 30 %}selected{% endif %}>30</option>
+                        <option value="35" {% if per_page == 35 %}selected{% endif %}>35</option>
+                    </select>
+                </div>
+            </form>
+            {% if total_pages > 1 %}
+                <a class="btn btn-sm btn-outline-primary {{ 'disabled' if page <= 1 else '' }}"
+                   href="{{ url_for('admin.positions', sort=sort, direction=direction, q=q, page=page-1, per_page=per_page) if page > 1 else '#' }}"
+                   aria-label="Предыдущая страница">
+                    ←
+                </a>
+                <span class="small text-muted">Страница {{ page }} из {{ total_pages }}</span>
+                <a class="btn btn-sm btn-outline-primary {{ 'disabled' if page >= total_pages else '' }}"
+                   href="{{ url_for('admin.positions', sort=sort, direction=direction, q=q, page=page+1, per_page=per_page) if page < total_pages else '#' }}"
+                   aria-label="Следующая страница">
+                    →
+                </a>
+            {% endif %}
+        </div>
+    {% endif %}
 {% endblock %}

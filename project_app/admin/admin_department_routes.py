@@ -6,6 +6,9 @@ from project_app.utils.request_utils import get_next_url
 from project_app.forms import DepartmentForm
 from project_app.models import ActiveVacancy, Department, Employee, Position, db
 
+PER_PAGE_OPTIONS = {5, 10, 15, 30, 35}
+DEFAULT_PER_PAGE = 5
+
 
 def iter_department_tree(department):
     yield department
@@ -104,8 +107,38 @@ def register_department_routes(admin_bp):
     @admin_required
     def department_detail(dept_id):
         dept = db.get_or_404(Department, dept_id)
-        employees = dept.all_employees
-        return render_template("admin/department_detail.html", dept=dept, employees=employees)
+        page = request.args.get("page", default=1, type=int)
+        per_page = request.args.get("per_page", default=DEFAULT_PER_PAGE, type=int)
+        if not page or page < 1:
+            page = 1
+        if per_page not in PER_PAGE_OPTIONS:
+            per_page = DEFAULT_PER_PAGE
+
+        all_employees = sorted(
+            dept.all_employees,
+            key=lambda emp: (
+                (emp.last_name or "").lower(),
+                (emp.first_name or "").lower(),
+                (emp.middle_name or "").lower(),
+                emp.id,
+            ),
+        )
+        total_employees = len(all_employees)
+        total_pages = max((total_employees - 1) // per_page + 1, 1)
+        if page > total_pages:
+            page = total_pages
+
+        offset = (page - 1) * per_page
+        employees = all_employees[offset:offset + per_page]
+        return render_template(
+            "admin/department_detail.html",
+            dept=dept,
+            employees=employees,
+            total_employees=total_employees,
+            page=page,
+            total_pages=total_pages,
+            per_page=per_page,
+        )
 
     @admin_bp.route("/department/delete/<int:dept_id>", methods=["POST"])
     @admin_required

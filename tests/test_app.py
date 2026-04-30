@@ -632,6 +632,82 @@ class FlaskProjectTestCase(unittest.TestCase):
             refreshed_root = db.session.get(Department, root.id)
             self.assertEqual(len(refreshed_root.all_employees), 1)
 
+    def test_department_detail_is_paginated_with_default_five_rows(self):
+        with self.app.app_context():
+            department = Department(name="Разработка")
+            db.session.add(department)
+            db.session.flush()
+
+            position = Position(title="Backend Developer", department_id=department.id)
+            db.session.add(position)
+            db.session.flush()
+
+            for idx in range(1, 12):
+                db.session.add(
+                    Employee(
+                        last_name=f"Сотрудник{idx:02d}",
+                        first_name="Тест",
+                        middle_name=None,
+                        email=f"department-page-{idx}@example.com",
+                        phone=f"+79990101{idx:03d}",
+                        position_id=position.id,
+                        is_active=True,
+                    )
+                )
+            db.session.commit()
+            dept_id = department.id
+
+        self.login("admin_user", "Admin123")
+        first_page = self.client.get(f"/admin/departments/{dept_id}")
+        self.assertEqual(first_page.status_code, 200)
+        self.assertIn("Сотрудник01 Тест".encode("utf-8"), first_page.data)
+        self.assertNotIn("Сотрудник06 Тест".encode("utf-8"), first_page.data)
+
+        second_page = self.client.get(f"/admin/departments/{dept_id}?page=2")
+        self.assertEqual(second_page.status_code, 200)
+        self.assertIn("Сотрудник06 Тест".encode("utf-8"), second_page.data)
+
+    def test_departments_tree_shows_only_active_employees(self):
+        with self.app.app_context():
+            department = Department(name="Разработка")
+            db.session.add(department)
+            db.session.flush()
+
+            position = Position(title="Backend Developer", department_id=department.id)
+            db.session.add(position)
+            db.session.flush()
+
+            db.session.add_all(
+                [
+                    Employee(
+                        last_name="Активный",
+                        first_name="Сотрудник",
+                        middle_name=None,
+                        email="active-list@example.com",
+                        phone="+79990000130",
+                        position_id=position.id,
+                        is_active=True,
+                    ),
+                    Employee(
+                        last_name="Неактивный",
+                        first_name="Сотрудник",
+                        middle_name=None,
+                        email="inactive-list@example.com",
+                        phone="+79990000131",
+                        position_id=position.id,
+                        is_active=False,
+                    ),
+                ]
+            )
+            db.session.commit()
+
+        self.login("admin_user", "Admin123")
+        response = self.client.get("/admin/departments")
+        self.assertEqual(response.status_code, 200)
+        page_text = response.get_data(as_text=True)
+        self.assertIn("Активный Сотрудник", page_text)
+        self.assertNotIn("Неактивный Сотрудник", page_text)
+
     def test_vacancy_publication_ignores_duplicate_publish(self):
         with self.app.app_context():
             department = Department(name="Разработка")
@@ -855,6 +931,40 @@ class FlaskProjectTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn("Иванов Петр Сергеевич".encode("utf-8"), response.data)
 
+    def test_employee_list_is_paginated_by_ten_rows(self):
+        with self.app.app_context():
+            department = Department(name="Разработка")
+            db.session.add(department)
+            db.session.flush()
+
+            position = Position(title="Backend Developer", department_id=department.id)
+            db.session.add(position)
+            db.session.flush()
+
+            for idx in range(1, 12):
+                db.session.add(
+                    Employee(
+                        last_name=f"Сотрудник{idx:02d}",
+                        first_name="Тест",
+                        middle_name=None,
+                        email=f"employee-page-{idx}@example.com",
+                        phone=f"+79990001{idx:03d}",
+                        position_id=position.id,
+                        is_active=True,
+                    )
+                )
+            db.session.commit()
+
+        self.login("admin_user", "Admin123")
+        first_page = self.client.get("/admin/employees?page=1&per_page=10")
+        self.assertEqual(first_page.status_code, 200)
+        self.assertIn("Сотрудник01 Тест".encode("utf-8"), first_page.data)
+        self.assertNotIn("Сотрудник11 Тест".encode("utf-8"), first_page.data)
+
+        second_page = self.client.get("/admin/employees?page=2&per_page=10")
+        self.assertEqual(second_page.status_code, 200)
+        self.assertIn("Сотрудник11 Тест".encode("utf-8"), second_page.data)
+
     def test_position_list_ignores_invalid_sort_direction(self):
         with self.app.app_context():
             department = Department(name="Разработка")
@@ -868,6 +978,26 @@ class FlaskProjectTestCase(unittest.TestCase):
         response = self.client.get("/admin/positions?sort=department&direction=sideways")
         self.assertEqual(response.status_code, 200)
         self.assertIn("Backend Developer".encode("utf-8"), response.data)
+
+    def test_position_list_is_paginated_by_ten_rows(self):
+        with self.app.app_context():
+            department = Department(name="Разработка")
+            db.session.add(department)
+            db.session.flush()
+
+            for idx in range(1, 12):
+                db.session.add(Position(title=f"Должность {idx:02d}", department_id=department.id))
+            db.session.commit()
+
+        self.login("admin_user", "Admin123")
+        first_page = self.client.get("/admin/positions?page=1&per_page=10")
+        self.assertEqual(first_page.status_code, 200)
+        self.assertIn("Должность 01".encode("utf-8"), first_page.data)
+        self.assertNotIn("Должность 11".encode("utf-8"), first_page.data)
+
+        second_page = self.client.get("/admin/positions?page=2&per_page=10")
+        self.assertEqual(second_page.status_code, 200)
+        self.assertIn("Должность 11".encode("utf-8"), second_page.data)
 
     def test_department_delete_removes_active_vacancies_in_structure(self):
         with self.app.app_context():

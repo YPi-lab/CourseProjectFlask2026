@@ -8,6 +8,9 @@ from project_app.utils.request_utils import get_next_url
 from project_app.forms import PositionForm
 from project_app.models import ActiveVacancy, Department, Employee, Position, db
 
+PER_PAGE_OPTIONS = {5, 10, 15, 30, 35}
+DEFAULT_PER_PAGE = 5
+
 
 def get_department_choices():
     return [(choice_id, label) for choice_id, label in get_department_tree() if choice_id != 0]
@@ -21,6 +24,12 @@ def register_position_routes(admin_bp):
         search_terms = [term for term in search_query.split() if term]
         sort = request.args.get("sort", "title")
         direction = request.args.get("direction", "asc")
+        page = request.args.get("page", default=1, type=int)
+        per_page = request.args.get("per_page", default=DEFAULT_PER_PAGE, type=int)
+        if not page or page < 1:
+            page = 1
+        if per_page not in PER_PAGE_OPTIONS:
+            per_page = DEFAULT_PER_PAGE
         if direction not in {"asc", "desc"}:
             direction = "asc"
 
@@ -32,11 +41,11 @@ def register_position_routes(admin_bp):
         sort_column = sortable_fields.get(sort, sortable_fields["title"])
         order_expression = sort_column.desc() if direction == "desc" else sort_column.asc()
 
-        positions_query = Position.query.join(Department).outerjoin(Employee, Employee.position_id == Position.id)
+        base_query = Position.query.join(Department)
         if search_terms:
             for term in search_terms:
                 term_lower = term.lower()
-                positions_query = positions_query.filter(
+                base_query = base_query.filter(
                     or_(
                         Position.title.contains(term),
                         Department.name.contains(term),
@@ -45,13 +54,31 @@ def register_position_routes(admin_bp):
                     )
                 )
 
-        all_positions = positions_query.group_by(Position.id, Department.id).order_by(order_expression, Position.title.asc()).all()
+        total_positions = base_query.with_entities(func.count(func.distinct(Position.id))).scalar() or 0
+        total_pages = max((total_positions - 1) // per_page + 1, 1)
+        if page > total_pages:
+            page = total_pages
+
+        offset = (page - 1) * per_page
+        all_positions = (
+            base_query
+            .outerjoin(Employee, Employee.position_id == Position.id)
+            .group_by(Position.id, Department.id)
+            .order_by(order_expression, Position.title.asc())
+            .offset(offset)
+            .limit(per_page)
+            .all()
+        )
         return render_template(
             "admin/position.html",
             positions=all_positions,
+            total_positions=total_positions,
             sort=sort,
             direction=direction,
             q=search_query,
+            page=page,
+            total_pages=total_pages,
+            per_page=per_page,
         )
 
     @admin_bp.route("/positions/add", methods=["GET", "POST"])

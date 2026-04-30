@@ -7,6 +7,9 @@ from project_app.utils.request_utils import get_next_url
 from project_app.forms import EmployeeForm
 from project_app.models import Department, Employee, Position, db
 
+PER_PAGE_OPTIONS = {5, 10, 15, 30, 35}
+DEFAULT_PER_PAGE = 5
+
 
 def get_position_choices():
     return [(p.id, f"{p.title} ({p.department.name})") for p in Position.query.all()]
@@ -51,6 +54,12 @@ def register_employee_routes(admin_bp):
         search_terms = [term for term in search_query.split() if term]
         sort = request.args.get("sort", "name")
         direction = request.args.get("direction", "asc")
+        page = request.args.get("page", default=1, type=int)
+        per_page = request.args.get("per_page", default=DEFAULT_PER_PAGE, type=int)
+        if not page or page < 1:
+            page = 1
+        if per_page not in PER_PAGE_OPTIONS:
+            per_page = DEFAULT_PER_PAGE
         if direction not in {"asc", "desc"}:
             direction = "asc"
 
@@ -64,13 +73,13 @@ def register_employee_routes(admin_bp):
         sort_column = sortable_fields.get(sort, sortable_fields["name"])
         order_expression = sort_column.desc() if direction == "desc" else sort_column.asc()
 
-        employees_query = Employee.query.outerjoin(Position, Employee.position_id == Position.id).outerjoin(
+        base_query = Employee.query.outerjoin(Position, Employee.position_id == Position.id).outerjoin(
             Department, Position.department_id == Department.id
         )
         if search_terms:
             for term in search_terms:
                 term_lower = term.lower()
-                employees_query = employees_query.filter(
+                base_query = base_query.filter(
                     or_(
                         Employee.last_name.contains(term),
                         Employee.first_name.contains(term),
@@ -79,13 +88,29 @@ def register_employee_routes(admin_bp):
                     )
                 )
 
-        all_employees = employees_query.order_by(order_expression, Employee.last_name.asc(), Employee.first_name.asc()).all()
+        total_employees = base_query.with_entities(func.count(func.distinct(Employee.id))).scalar() or 0
+        total_pages = max((total_employees - 1) // per_page + 1, 1)
+        if page > total_pages:
+            page = total_pages
+
+        offset = (page - 1) * per_page
+        all_employees = (
+            base_query
+            .order_by(order_expression, Employee.last_name.asc(), Employee.first_name.asc())
+            .offset(offset)
+            .limit(per_page)
+            .all()
+        )
         return render_template(
             "admin/employees.html",
             employees=all_employees,
+            total_employees=total_employees,
             sort=sort,
             direction=direction,
             q=search_query,
+            page=page,
+            total_pages=total_pages,
+            per_page=per_page,
         )
 
     @admin_bp.route("/employee/add", methods=["GET", "POST"])
