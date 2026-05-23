@@ -1339,5 +1339,65 @@ class FlaskProjectTestCase(unittest.TestCase):
             self.assertIsNotNone(refreshed_admin)
 
 
+
+    def test_add_employee_filters_positions_by_department(self):
+        with self.app.app_context():
+            dept1 = Department(name="Dept 1")
+            dept2 = Department(name="Dept 2")
+            db.session.add_all([dept1, dept2])
+            db.session.flush()
+
+            pos1 = Position(title="Pos 1", department_id=dept1.id)
+            pos2 = Position(title="Pos 2", department_id=dept2.id)
+            db.session.add_all([pos1, pos2])
+            db.session.commit()
+            
+            dept1_id = dept1.id
+            pos1_id = pos1.id
+            pos2_id = pos2.id
+
+        self.login("admin_user", "Admin123")
+        
+        # When dept_id is provided, only positions from that department should be in choices
+        response = self.client.get(f"/admin/employee/add?dept_id={dept1_id}")
+        self.assertEqual(response.status_code, 200)
+        page_text = response.get_data(as_text=True)
+        self.assertIn(f'value="{pos1_id}"', page_text)
+        self.assertNotIn(f'value="{pos2_id}"', page_text)
+        
+        # When dept_id is NOT provided, all positions should be in choices
+        response = self.client.get("/admin/employee/add")
+        self.assertEqual(response.status_code, 200)
+        page_text = response.get_data(as_text=True)
+        self.assertIn(f'value="{pos1_id}"', page_text)
+        self.assertIn(f'value="{pos2_id}"', page_text)
+
+
+    def test_add_employee_from_department_redirects_back_to_department(self):
+        with self.app.app_context():
+            dept = Department(name="Redirect Dept")
+            db.session.add(dept)
+            db.session.flush()
+            pos = Position(title="Redirect Pos", department_id=dept.id)
+            db.session.add(pos)
+            db.session.commit()
+            dept_id = dept.id
+            pos_id = pos.id
+
+        self.login("admin_user", "Admin123")
+        response = self.client.post(
+            f"/admin/employee/add?dept_id={dept_id}",
+            data={
+                "last_name": "Redirect",
+                "first_name": "Test",
+                "email": "redirect@example.com",
+                "phone": "+79991234567",
+                "position_id": pos_id,
+                "is_active": "y",
+            },
+            follow_redirects=False,
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertIn(f"/admin/departments/{dept_id}", response.location)
 if __name__ == "__main__":
     unittest.main()

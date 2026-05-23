@@ -11,8 +11,11 @@ PER_PAGE_OPTIONS = {5, 10, 15, 30, 35}
 DEFAULT_PER_PAGE = 5
 
 
-def get_position_choices():
-    return [(p.id, f"{p.title} ({p.department.name})") for p in Position.query.all()]
+def get_position_choices(department_id=None):
+    query = Position.query
+    if department_id:
+        query = query.filter_by(department_id=department_id)
+    return [(p.id, f"{p.title} ({p.department.name})") for p in query.all()]
 
 
 def _render_employee_form(form, edit=False):
@@ -116,10 +119,16 @@ def register_employee_routes(admin_bp):
     @admin_bp.route("/employee/add", methods=["GET", "POST"])
     @admin_required
     def add_employee():
-        form = EmployeeForm()
-        form.position_id.choices = get_position_choices()
-        next_url = get_next_url("admin.employees")
         dept_id = request.args.get("dept_id", type=int)
+        form = EmployeeForm()
+        form.position_id.choices = get_position_choices(dept_id)
+        next_val = request.args.get("next") or request.form.get("next")
+        if next_val:
+            next_url = next_val
+        elif dept_id:
+            next_url = url_for("admin.department_detail", dept_id=dept_id)
+        else:
+            next_url = url_for("admin.employees")
 
         if request.method == "GET" and dept_id and form.position_id.choices:
             default_position = (
